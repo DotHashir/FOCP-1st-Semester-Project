@@ -1,4 +1,5 @@
 #include <iostream>
+#include "TicTacToe.h"
 using namespace std;
 
 void showMenu(); // funtcion prototype
@@ -21,6 +22,7 @@ int main()
         case 4:
             break;
         case 5:
+            TicTacToe();
             break;
         case 6:
             break;

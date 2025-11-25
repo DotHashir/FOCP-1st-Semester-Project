@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include "TicTacToe.h"
 using namespace std;
 
 char board[3][3];
@@ -7,6 +8,23 @@ int player = 1;
 char mark = 'X';
 int turn = 1;
 bool gameOver = false;
+
+void TicTacToe()
+{
+    initializeBoard();
+
+    while (!gameOver)
+    {
+        system("cls");
+        displayBoard();
+        determinePlayer();
+        playerMove();
+        if (checkWin())
+            winScreen();
+        else if (checkDraw())
+            drawScreen();
+    }
+}
 
 void initializeBoard()
 {
@@ -129,22 +147,4 @@ void drawScreen()
     cout << "The game is a draw" << endl;
     cout << "**************************************************" << endl;
     gameOver = true;
-}
-
-int main()
-{
-    initializeBoard();
-
-    while (!gameOver)
-    {
-        system("cls");
-        displayBoard();
-        determinePlayer();
-        playerMove();
-        if (checkWin())
-            winScreen();
-        else if (checkDraw())
-            drawScreen();
-    }
-    return 0;
 }
