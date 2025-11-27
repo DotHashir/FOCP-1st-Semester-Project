@@ -8,6 +8,7 @@ int player = 1;
 char mark = 'X';
 int turn = 1;
 bool gameOver = false;
+bool player1Turn = true;
 
 void TicTacToe()
 {
@@ -78,14 +79,14 @@ void playerMove()
 {
     int row, col;
 
-    cout << "Player " << player << "(" << mark << "), enter your move (row and column): ";
+    cout << "Player " << (player1Turn ? "1(X)" : "2(O)") << " enter your move (row and column): ";
     cin >> row >> col;
 
     // Checks if the user choice is valid by seeing if its in the range and the position is empty
     if (row >= 0 && row < 3 && col >= 0 && col < 3 && board[row][col] == ' ')
     {
         board[row][col] = mark;
-        turn++;
+        player1Turn = !player1Turn;
     }
     else
     {
@@ -134,8 +135,9 @@ void winScreen()
     system("cls");
     displayBoard();
     cout << "**************************************************" << endl;
-    cout << "CONGRATULATIONS! Player " << player << "(" << mark << ") WINS!" << endl;
-    cout << "**************************************************" << endl;
+    cout << "CONGRATULATIONS! Player " << (player1Turn ? "1(X)" : "2(O)") << " WINS !" << endl;
+    cout
+        << "**************************************************" << endl;
     gameOver = true;
 }
 
