@@ -6,7 +6,7 @@ using namespace std;
 char board[3][3];
 bool player1Turn = true;
 char mark = 'X';
-bool gameOver = false;
+static bool gameOver = false;
 
 void TicTacToe()
 {

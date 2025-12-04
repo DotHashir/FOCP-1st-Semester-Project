@@ -2,11 +2,13 @@
 #include <cmath>
 #include <string>
 #include <cctype>
+#include <cstdlib>
 #include <limits>
+#include "Chess.h"
 using namespace std;
 
 bool isWhiteTurn = true;
-bool gameOver = false;
+static bool gameOver = false;
 bool whiteKingMoved = false;
 bool blackKingMoved = false;
 bool rightWhiteRookMoved = false;
@@ -14,6 +16,41 @@ bool leftWhiteRookMoved = false;
 bool rightBlackRookMoved = false;
 bool leftBlackRookMoved = false;
 int enPassantCol = -1;
+
+void chess()
+{
+    char board[8][8];
+    initializeBoard(board);
+    printBoard(board);
+    int sr, sc, er, ec; // start row, start column, end row, end column
+    while (!gameOver)
+    {
+        playerInput(sr, sc, er, ec);
+
+        if (gameOver)
+            break;
+
+        if (isValidMove(sr, sc, er, ec, board, false))
+        {
+            system("cls");
+
+            makeMove(sr, sc, er, ec, board);
+            printBoard(board);
+
+            if (isCheckmate(board))
+                cout << (isWhiteTurn ? "White" : "Black") << " won!" << endl;
+            else if (isStalemate(board))
+                cout << "The game resulted in a stalemate!" << endl;
+
+            // Switches player's turn
+            isWhiteTurn = !isWhiteTurn;
+
+            // Checks and displays a warning if the next player's king is in check
+            if (isInCheck(board))
+                cout << "WARNING! " << (isWhiteTurn ? "White's" : "Black's") << " king is in check" << endl;
+        }
+    }
+}
 
 void initializeBoard(char board[8][8])
 {
@@ -24,7 +61,7 @@ void initializeBoard(char board[8][8])
             board[i][j] = ' ';
     }
 
-    // Setup row arrangement for balck and white pieces
+    // Setup row arrangement for black and white pieces
     char black_row[8] = {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'};
     char white_row[8] = {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'};
     for (int j = 0; j < 8; j++)
@@ -77,29 +114,6 @@ void printBoard(char board[8][8])
     cout << endl;
 }
 
-// Converts piece character to its full name
-string getPieceName(char piece)
-{
-
-    switch (tolower(piece))
-    {
-    case 'p':
-        return "pawn";
-    case 'r':
-        return "rook";
-    case 'b':
-        return "bishop";
-    case 'n':
-        return "knight";
-    case 'q':
-        return "queen";
-    case 'k':
-        return "king";
-    default:
-        return "error in fetching piece name";
-    }
-}
-
 // Handles player input and verifies its correct format
 void playerInput(int &sr, int &sc, int &er, int &ec)
 {
@@ -137,433 +151,6 @@ void playerInput(int &sr, int &sc, int &er, int &ec)
         }
 
         break;
-    }
-}
-
-// Checks if the piece passed to it belongs to the current player
-bool isCurrentPlayerPiece(char piece)
-{
-    if (isWhiteTurn && (piece >= 'A' && piece <= 'Z'))
-        return true;
-    else if (!isWhiteTurn && (piece >= 'a' && piece <= 'z'))
-        return true;
-    else
-        return false;
-}
-
-// Checks that there are no other pieces in between for the sliding pieces (Rook, Bishop, Queen)
-bool isPathClear(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // For horizontal movement
-    if (sr == er)
-    {
-        // Determines whether to move left or right
-        int direction = (ec > sc) ? 1 : -1;
-        for (int col = sc + direction; col != ec; col += direction)
-        {
-            if (board[er][col] != ' ')
-                return false;
-        }
-    }
-    // For vertical movement
-    else if (sc == ec)
-    {
-        // Determines whether to move up or down
-        int direction = (er > sr) ? 1 : -1;
-        for (int row = sr + direction; row != er; row += direction)
-        {
-            if (board[row][ec] != ' ')
-                return false;
-        }
-    }
-    // For diagonal movement
-    else
-    {
-        int colDirection = (ec > sc) ? 1 : -1;
-        int rowDirection = (er > sr) ? 1 : -1;
-        int row = sr + rowDirection;
-        int col = sc + colDirection;
-
-        while (row != er)
-        {
-            if (board[row][col] != ' ')
-                return false;
-
-            row += rowDirection;
-            col += colDirection;
-        }
-    }
-
-    return true;
-}
-
-bool isValidPawnMove(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // Determines whether to move up or down through the array
-    int direction = isWhiteTurn ? -1 : 1;
-
-    // For forward movement
-    if (sc == ec)
-    {
-        // For 1 step movement
-        if (er == (sr + direction) && board[er][ec] == ' ')
-            return true;
-        // For 2 step movement in the initial position
-        else if (isWhiteTurn && sr == 6 && er == 4 && board[5][ec] == ' ' && board[er][ec] == ' ')
-            return true;
-        else if (!isWhiteTurn && sr == 1 && er == 3 && board[2][ec] == ' ' && board[er][ec] == ' ')
-            return true;
-    }
-
-    // For diagonal capturing
-    if (abs(ec - sc) == 1 && er == (sr + direction) && board[er][ec] != ' ')
-        return true;
-
-    // Logic for En Passant rule
-    if (abs(ec - sc) == 1 && er == (sr + direction && board[er][ec] == ' '))
-    {
-        if (isWhiteTurn && sr == 3 && ec == enPassantCol)
-            return true;
-        else if (!isWhiteTurn && sr == 4 && ec == enPassantCol)
-            return true;
-    }
-    return false;
-}
-
-bool isValidRookMove(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // Checks if the movement is along horizontal or vertical
-    if (sr != er && sc != ec)
-        return false;
-
-    return isPathClear(sr, sc, er, ec, board);
-}
-
-bool isValidBishopMove(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // Checks if the movement is in a digonal
-    if (abs(sr - er) != abs(sc - ec))
-        return false;
-
-    return isPathClear(sr, sc, er, ec, board);
-}
-
-bool isValidKnightMove(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // Confirms that the distance between its destination row and column is either 1 and 2 or 2 and 1
-    if ((abs(er - sr) == 2 && abs(ec - sc) == 1) || (abs(er - sr) == 1 && abs(ec - sc) == 2))
-        return true;
-
-    return false;
-}
-
-bool isValidQueenMove(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // Checks if the movement is in a digonal or vertical or horizontal
-    if ((abs(sr - er) != abs(sc - ec)) && (sr != er && sc != ec))
-        return false;
-
-    return isPathClear(sr, sc, er, ec, board);
-}
-
-bool isValidKingMove(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // Logic for castling
-    if (abs(ec - sc == 2))
-    {
-        // Makes sure that all the conditions for castiling are satisfied
-        if (board[sr][sc] == 'K' && er == 7 && ec == 6 && !whiteKingMoved && !rightWhiteRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(7, 5, board) && !isSquareAttacked(7, 6, board))
-            return true;
-        if (board[sr][sc] == 'K' && er == 7 && ec == 2 && !whiteKingMoved && !leftWhiteRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(7, 3, board) && !isSquareAttacked(7, 2, board))
-            return true;
-        if (board[sr][sc] == 'k' && er == 0 && ec == 6 && !blackKingMoved && !rightBlackRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(0, 5, board) && !isSquareAttacked(0, 6, board))
-            return true;
-        if (board[sr][sc] == 'k' && er == 0 && ec == 2 && !blackKingMoved && !leftBlackRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(0, 3, board) && !isSquareAttacked(0, 2, board))
-            return true;
-    }
-
-    // Check if the movement is only around the king
-    else if (abs(er - sr) > 1 || abs(ec - sc) > 1)
-        return false;
-
-    return true;
-}
-
-// This function find the position of king in the array(board)
-void findKing(int &kr, int &kc, char board[8][8])
-{
-    char kingPiece = isWhiteTurn ? 'K' : 'k';
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            if (board[i][j] == kingPiece)
-            {
-                kr = i;
-                kc = j;
-                return;
-            }
-        }
-    }
-}
-
-// This function checks if the array element(board position) passed to it is attacked by any other enemy's piece
-bool isSquareAttacked(int row, int col, char board[8][8])
-{
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            char piece = board[i][j];
-
-            // Skips player's own pieces and empty spaces
-            if (isCurrentPlayerPiece(piece))
-                continue;
-            else if (piece == ' ')
-                continue;
-
-            // Checks if the piece can attack by calling their respective functions
-            switch (tolower(piece))
-            {
-            case 'p':
-            {
-                int direction = isWhiteTurn ? 1 : -1;
-                if (abs(col - j) == 1 && row == (i + direction))
-                    return true;
-                break;
-            }
-            case 'r':
-                if (isValidRookMove(i, j, row, col, board))
-                    return true;
-                break;
-            case 'b':
-                if (isValidBishopMove(i, j, row, col, board))
-                    return true;
-                break;
-            case 'n':
-                if (isValidKnightMove(i, j, row, col, board))
-                    return true;
-                break;
-            case 'q':
-                if (isValidQueenMove(i, j, row, col, board))
-                    return true;
-                break;
-            case 'k':
-                if (isValidKingMove(i, j, row, col, board))
-                    return true;
-                break;
-            }
-        }
-    }
-    return false;
-}
-
-// Checks if in the current state of the board your king is in check or not
-bool isInCheck(char board[8][8])
-{
-    int kr, kc;
-    findKing(kr, kc, board);
-
-    return isSquareAttacked(kr, kc, board);
-}
-
-bool isMoveResultingInCheck(int sr, int sc, int er, int ec, char board[8][8])
-{
-    // Creates a copy of the current board
-    char tempBoard[8][8];
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-            tempBoard[i][j] = board[i][j];
-    }
-
-    // Handles the exceptional case of En-Passant capturing
-    if (tolower(tempBoard[sr][sc]) == 'p' && tempBoard[er][ec] == ' ' && abs(ec - sc) == 1)
-        tempBoard[sr][ec] == ' ';
-
-    // Makes the move in the fake board to see if there results a check
-    tempBoard[er][ec] = tempBoard[sr][sc];
-    tempBoard[sr][sc] = ' ';
-
-    return isInCheck(tempBoard);
-}
-
-bool isValidPieceMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode)
-{
-    // quietMode determines if error messages should be displayed for invalid moves
-
-    char piece = tolower(board[sr][sc]);
-    // Calls the correct function wrt to the type of piece moved
-    switch (piece)
-    {
-    case 'p':
-        if (!isValidPawnMove(sr, sc, er, ec, board))
-        {
-            if (!quietMode)
-                cout << "Error: Invalid pawn move" << endl;
-            return false;
-        }
-        break;
-    case 'r':
-        if (!isValidRookMove(sr, sc, er, ec, board))
-        {
-            if (!quietMode)
-                cout << "Error: Invalid rook move" << endl;
-            return false;
-        }
-        break;
-    case 'b':
-        if (!isValidBishopMove(sr, sc, er, ec, board))
-        {
-            if (!quietMode)
-                cout << "Error: Invalid bishop move" << endl;
-            return false;
-        }
-        break;
-    case 'n':
-        if (!isValidKnightMove(sr, sc, er, ec, board))
-        {
-            if (!quietMode)
-                cout << "Error: Invalid knight move" << endl;
-            return false;
-        }
-        break;
-    case 'q':
-        if (!isValidQueenMove(sr, sc, er, ec, board))
-        {
-            if (!quietMode)
-                cout << "Error: Invalid queen move" << endl;
-            return false;
-        }
-        break;
-    case 'k':
-        if (!isValidKingMove(sr, sc, er, ec, board))
-        {
-            if (!quietMode)
-                cout << "Error: Invalid king move" << endl;
-            return false;
-        }
-        break;
-    }
-
-    if (isMoveResultingInCheck(sr, sc, er, ec, board))
-    {
-        if (!quietMode)
-            cout << "Error: Illegal move as it results in check" << endl;
-        return false;
-    }
-
-    return true;
-}
-
-bool isValidMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode)
-{
-    // Checks if the starting position is an empty space
-    if (board[sr][sc] == ' ')
-    {
-        if (!quietMode)
-            cout << "Error: The piece you are trying to move is an empty space" << endl;
-        return false;
-    }
-
-    // Checks if the starting position has your piece or not
-    else if (!isCurrentPlayerPiece(board[sr][sc]))
-    {
-        if (!quietMode)
-            cout << "Error: The piece you are trying to move is not yours" << endl;
-        return false;
-    }
-    // Checks if the capturing position has your piece
-    else if (isCurrentPlayerPiece(board[er][ec]))
-    {
-        if (!quietMode)
-            cout << "Error: Cannot capture your own piece" << endl;
-        return false;
-    }
-    else if (sr == er && sc == ec)
-    {
-        if (!quietMode)
-            cout << "Error: Ending and starting positions cannot be the same" << endl;
-        return false;
-    }
-
-    return isValidPieceMove(sr, sc, er, ec, board, quietMode);
-}
-
-bool hasAnyLegalMove(char board[8][8])
-{
-    // Itterates through every position on the board for starting position
-    for (int sr = 0; sr < 8; sr++)
-    {
-        for (int sc = 0; sc < 8; sc++)
-        {
-            // Only continues if the position is occupied by player's own piece
-            if (isCurrentPlayerPiece(board[sr][sc]))
-            {
-                // Itterates through every position on the board for destination position
-                for (int er = 0; er < 8; er++)
-                {
-                    for (int ec = 0; ec < 8; ec++)
-                    {
-                        // Sees if there is any single legal move
-                        if (isValidMove(sr, sc, er, ec, board, true))
-                            return false;
-                    }
-                }
-            }
-        }
-    }
-}
-
-bool isCheckmate(char board[8][8])
-{
-    if (!isInCheck(board) || hasAnyLegalMove(board))
-        return false;
-
-    gameOver = true;
-    return true;
-}
-
-bool isStalemate(char board[8][8])
-{
-    if (isInCheck(board) || hasAnyLegalMove(board))
-        return false;
-
-    gameOver = true;
-    return true;
-}
-
-// Handles logic for pawn promotion
-void PawnPromotion(char board[8][8], int row, int col)
-{
-    string input;
-    char choice;
-
-    // Infinite loop until user makes a valid input
-    while (true)
-    {
-        // Below logic correctly deals if the user enters a string instead of a character
-        cout << "Which piece do you want to promote your pawn to(Q, N, R, B): ";
-        cin >> input;
-
-        // Makes the choice only equal to the first letter of the string user enetered
-        choice = input[0];
-        choice = tolower(choice);
-
-        // Ignores the remaining part of the string
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        if (choice == 'q' || choice == 'n' || choice == 'r' || choice == 'b')
-        {
-            if (row == 0)
-                board[row][col] = toupper(choice);
-            else if (row == 7)
-                board[row][col] = choice;
-
-            break;
-        }
-        else
-            cout << "Error: Wrong input" << endl;
     }
 }
 
@@ -638,7 +225,7 @@ void makeMove(int sr, int sc, int er, int ec, char board[8][8])
         rightBlackRookMoved = true;
 
     // Saves the column for En Passant
-    if (tolower(board[er][ec] == 'p') && abs(er - sr) == 2)
+    if (tolower(board[er][ec]) == 'p' && abs(er - sr) == 2)
         enPassantCol = ec;
     else
         enPassantCol = -1;
@@ -648,33 +235,453 @@ void makeMove(int sr, int sc, int er, int ec, char board[8][8])
         PawnPromotion(board, er, ec);
 }
 
-int main()
+bool isValidMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode)
 {
-    char board[8][8];
-    initializeBoard(board);
-    printBoard(board);
-    int sr, sc, er, ec; // start row, start column, end row, end column
-    while (!gameOver)
+    // Checks if the starting position is an empty space
+    if (board[sr][sc] == ' ')
     {
-        playerInput(sr, sc, er, ec);
-        if (gameOver)
-            break;
+        if (!quietMode)
+            cout << "Error: The piece you are trying to move is an empty space" << endl;
+        return false;
+    }
 
-        if (isValidMove(sr, sc, er, ec, board, false))
+    // Checks if the starting position has your piece or not
+    else if (!isCurrentPlayerPiece(board[sr][sc]))
+    {
+        if (!quietMode)
+            cout << "Error: The piece you are trying to move is not yours" << endl;
+        return false;
+    }
+    // Checks if the capturing position has your piece
+    else if (isCurrentPlayerPiece(board[er][ec]))
+    {
+        if (!quietMode)
+            cout << "Error: Cannot capture your own piece" << endl;
+        return false;
+    }
+    else if (sr == er && sc == ec)
+    {
+        if (!quietMode)
+            cout << "Error: Ending and starting positions cannot be the same" << endl;
+        return false;
+    }
+
+    return isValidPieceMove(sr, sc, er, ec, board, quietMode);
+}
+
+bool isValidPieceMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode)
+{
+    // quietMode determines if error messages should be displayed for invalid moves
+
+    char piece = tolower(board[sr][sc]);
+    // Calls the correct function wrt to the type of piece moved
+    switch (piece)
+    {
+    case 'p':
+        if (!isValidPawnMove(sr, sc, er, ec, board))
         {
-            makeMove(sr, sc, er, ec, board);
-            printBoard(board);
-            if (isCheckmate(board))
-                cout << (isWhiteTurn ? "White" : "Black") << " won!" << endl;
-            else if (isStalemate(board))
-                cout << "The game resulted in a stalemate!" << endl;
-
-            // Switches player's turn
-            isWhiteTurn = !isWhiteTurn;
-
-            // Checks and displays a warning if the next player's king is in check
-            if (isInCheck(board))
-                cout << "WARNING! " << (isWhiteTurn ? "White's" : "Black's") << " king is in check" << endl;
+            if (!quietMode)
+                cout << "Error: Invalid pawn move" << endl;
+            return false;
         }
+        break;
+    case 'r':
+        if (!isValidRookMove(sr, sc, er, ec, board))
+        {
+            if (!quietMode)
+                cout << "Error: Invalid rook move" << endl;
+            return false;
+        }
+        break;
+    case 'b':
+        if (!isValidBishopMove(sr, sc, er, ec, board))
+        {
+            if (!quietMode)
+                cout << "Error: Invalid bishop move" << endl;
+            return false;
+        }
+        break;
+    case 'n':
+        if (!isValidKnightMove(sr, sc, er, ec, board))
+        {
+            if (!quietMode)
+                cout << "Error: Invalid knight move" << endl;
+            return false;
+        }
+        break;
+    case 'q':
+        if (!isValidQueenMove(sr, sc, er, ec, board))
+        {
+            if (!quietMode)
+                cout << "Error: Invalid queen move" << endl;
+            return false;
+        }
+        break;
+    case 'k':
+        if (!isValidKingMove(sr, sc, er, ec, board))
+        {
+            if (!quietMode)
+                cout << "Error: Invalid king move" << endl;
+            return false;
+        }
+        break;
+    }
+
+    if (isMoveResultingInCheck(sr, sc, er, ec, board))
+    {
+        if (!quietMode)
+            cout << "Error: Illegal move as it results in check" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool isValidPawnMove(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // Determines whether to move up or down through the array
+    int direction = isWhiteTurn ? -1 : 1;
+
+    // For forward movement
+    if (sc == ec)
+    {
+        // For 1 step movement
+        if (er == (sr + direction) && board[er][ec] == ' ')
+            return true;
+        // For 2 step movement in the initial position
+        else if (isWhiteTurn && sr == 6 && er == 4 && board[5][ec] == ' ' && board[er][ec] == ' ')
+            return true;
+        else if (!isWhiteTurn && sr == 1 && er == 3 && board[2][ec] == ' ' && board[er][ec] == ' ')
+            return true;
+    }
+
+    // For diagonal capturing
+    if (abs(ec - sc) == 1 && er == (sr + direction) && board[er][ec] != ' ')
+        return true;
+
+    // Logic for En Passant rule
+    if (abs(ec - sc) == 1 && er == (sr + direction) && board[er][ec] == ' ')
+    {
+        if (isWhiteTurn && sr == 3 && ec == enPassantCol)
+            return true;
+        else if (!isWhiteTurn && sr == 4 && ec == enPassantCol)
+            return true;
+    }
+    return false;
+}
+
+bool isValidRookMove(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // Checks if the movement is along horizontal or vertical
+    if (sr != er && sc != ec)
+        return false;
+
+    return isPathClear(sr, sc, er, ec, board);
+}
+
+bool isValidBishopMove(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // Checks if the movement is in a digonal
+    if (abs(sr - er) != abs(sc - ec))
+        return false;
+
+    return isPathClear(sr, sc, er, ec, board);
+}
+
+bool isValidKnightMove(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // Confirms that the distance between its destination row and column is either 1 and 2 or 2 and 1
+    if ((abs(er - sr) == 2 && abs(ec - sc) == 1) || (abs(er - sr) == 1 && abs(ec - sc) == 2))
+        return true;
+
+    return false;
+}
+
+bool isValidQueenMove(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // Checks if the movement is in a digonal or vertical or horizontal
+    if ((abs(sr - er) != abs(sc - ec)) && (sr != er && sc != ec))
+        return false;
+
+    return isPathClear(sr, sc, er, ec, board);
+}
+
+bool isValidKingMove(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // Logic for castling
+    if (abs(ec - sc == 2))
+    {
+        // Makes sure that all the conditions for castiling are satisfied
+        if (board[sr][sc] == 'K' && er == 7 && ec == 6 && !whiteKingMoved && !rightWhiteRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(7, 5, board) && !isSquareAttacked(7, 6, board))
+            return true;
+        if (board[sr][sc] == 'K' && er == 7 && ec == 2 && !whiteKingMoved && !leftWhiteRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(7, 3, board) && !isSquareAttacked(7, 2, board))
+            return true;
+        if (board[sr][sc] == 'k' && er == 0 && ec == 6 && !blackKingMoved && !rightBlackRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(0, 5, board) && !isSquareAttacked(0, 6, board))
+            return true;
+        if (board[sr][sc] == 'k' && er == 0 && ec == 2 && !blackKingMoved && !leftBlackRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(0, 3, board) && !isSquareAttacked(0, 2, board))
+            return true;
+    }
+
+    // Check if the movement is only around the king
+    else if (abs(er - sr) > 1 || abs(ec - sc) > 1)
+        return false;
+
+    return true;
+}
+
+// Checks that there are no other pieces in between for the sliding pieces (Rook, Bishop, Queen)
+bool isPathClear(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // For horizontal movement
+    if (sr == er)
+    {
+        // Determines whether to move left or right
+        int direction = (ec > sc) ? 1 : -1;
+        for (int col = sc + direction; col != ec; col += direction)
+        {
+            if (board[er][col] != ' ')
+                return false;
+        }
+    }
+    // For vertical movement
+    else if (sc == ec)
+    {
+        // Determines whether to move up or down
+        int direction = (er > sr) ? 1 : -1;
+        for (int row = sr + direction; row != er; row += direction)
+        {
+            if (board[row][ec] != ' ')
+                return false;
+        }
+    }
+    // For diagonal movement
+    else
+    {
+        int colDirection = (ec > sc) ? 1 : -1;
+        int rowDirection = (er > sr) ? 1 : -1;
+        int row = sr + rowDirection;
+        int col = sc + colDirection;
+
+        while (row != er)
+        {
+            if (board[row][col] != ' ')
+                return false;
+
+            row += rowDirection;
+            col += colDirection;
+        }
+    }
+
+    return true;
+}
+
+// Checks if in the current state of the board your king is in check or not
+bool isInCheck(char board[8][8])
+{
+    int kr, kc;
+    findKing(kr, kc, board);
+
+    return isSquareAttacked(kr, kc, board);
+}
+
+bool isMoveResultingInCheck(int sr, int sc, int er, int ec, char board[8][8])
+{
+    // Creates a copy of the current board
+    char tempBoard[8][8];
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+            tempBoard[i][j] = board[i][j];
+    }
+
+    // Handles the exceptional case of En-Passant capturing
+    if (tolower(tempBoard[sr][sc]) == 'p' && tempBoard[er][ec] == ' ' && abs(ec - sc) == 1)
+        tempBoard[sr][ec] = ' ';
+
+    // Makes the move in the fake board to see if there results a check
+    tempBoard[er][ec] = tempBoard[sr][sc];
+    tempBoard[sr][sc] = ' ';
+
+    return isInCheck(tempBoard);
+}
+
+bool isCheckmate(char board[8][8])
+{
+    if (!isInCheck(board) || hasAnyLegalMove(board))
+        return false;
+
+    gameOver = true;
+    return true;
+}
+
+bool isStalemate(char board[8][8])
+{
+    if (isInCheck(board) || hasAnyLegalMove(board))
+        return false;
+
+    gameOver = true;
+    return true;
+}
+
+// This function find the position of king in the array(board)
+void findKing(int &kr, int &kc, char board[8][8])
+{
+    char kingPiece = isWhiteTurn ? 'K' : 'k';
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (board[i][j] == kingPiece)
+            {
+                kr = i;
+                kc = j;
+                return;
+            }
+        }
+    }
+}
+
+// This function checks if the array element(board position) passed to it is attacked by any other enemy's piece
+bool isSquareAttacked(int row, int col, char board[8][8])
+{
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            char piece = board[i][j];
+
+            // Skips player's own pieces and empty spaces
+            if (isCurrentPlayerPiece(piece))
+                continue;
+            else if (piece == ' ')
+                continue;
+
+            // Checks if the piece can attack by calling their respective functions
+            switch (tolower(piece))
+            {
+            case 'p':
+            {
+                int direction = isWhiteTurn ? 1 : -1;
+                if (abs(col - j) == 1 && row == (i + direction))
+                    return true;
+                break;
+            }
+            case 'r':
+                if (isValidRookMove(i, j, row, col, board))
+                    return true;
+                break;
+            case 'b':
+                if (isValidBishopMove(i, j, row, col, board))
+                    return true;
+                break;
+            case 'n':
+                if (isValidKnightMove(i, j, row, col, board))
+                    return true;
+                break;
+            case 'q':
+                if (isValidQueenMove(i, j, row, col, board))
+                    return true;
+                break;
+            case 'k':
+                if (isValidKingMove(i, j, row, col, board))
+                    return true;
+                break;
+            }
+        }
+    }
+    return false;
+}
+
+bool hasAnyLegalMove(char board[8][8])
+{
+    // Itterates through every position on the board for starting position
+    for (int sr = 0; sr < 8; sr++)
+    {
+        for (int sc = 0; sc < 8; sc++)
+        {
+            // Only continues if the position is occupied by player's own piece
+            if (isCurrentPlayerPiece(board[sr][sc]))
+            {
+                // Itterates through every position on the board for destination position
+                for (int er = 0; er < 8; er++)
+                {
+                    for (int ec = 0; ec < 8; ec++)
+                    {
+                        // Sees if there is any single legal move
+                        if (isValidMove(sr, sc, er, ec, board, true))
+                            return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+// Handles logic for pawn promotion
+void PawnPromotion(char board[8][8], int row, int col)
+{
+    string input;
+    char choice;
+
+    // Infinite loop until user makes a valid input
+    while (true)
+    {
+        // Below logic correctly deals if the user enters a string instead of a character
+        cout << "Which piece do you want to promote your pawn to(Q, N, R, B): ";
+        cin >> input;
+
+        // Makes the choice only equal to the first letter of the string user enetered
+        choice = input[0];
+        choice = tolower(choice);
+
+        // Ignores the remaining part of the string
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        if (choice == 'q' || choice == 'n' || choice == 'r' || choice == 'b')
+        {
+            if (row == 0)
+                board[row][col] = toupper(choice);
+            else if (row == 7)
+                board[row][col] = choice;
+
+            break;
+        }
+        else
+            cout << "Error: Wrong input" << endl;
+    }
+}
+
+// Checks if the piece passed to it belongs to the current player
+bool isCurrentPlayerPiece(char piece)
+{
+    if (isWhiteTurn && (piece >= 'A' && piece <= 'Z'))
+        return true;
+    else if (!isWhiteTurn && (piece >= 'a' && piece <= 'z'))
+        return true;
+    else
+        return false;
+}
+
+// Converts piece character to its full name
+string getPieceName(char piece)
+{
+
+    switch (tolower(piece))
+    {
+    case 'p':
+        return "pawn";
+    case 'r':
+        return "rook";
+    case 'b':
+        return "bishop";
+    case 'n':
+        return "knight";
+    case 'q':
+        return "queen";
+    case 'k':
+        return "king";
+    default:
+        return "error in fetching piece name";
     }
 }

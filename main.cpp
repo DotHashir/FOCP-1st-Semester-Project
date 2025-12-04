@@ -1,5 +1,6 @@
 #include <iostream>
 #include "TicTacToe.h"
+#include "Chess.h"
 using namespace std;
 
 void showMenu(); // funtcion prototype
@@ -14,6 +15,7 @@ int main()
         switch (choice)
         {
         case 1:
+            chess();
             break;
         case 2:
             break;
