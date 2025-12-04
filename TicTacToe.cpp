@@ -4,11 +4,9 @@
 using namespace std;
 
 char board[3][3];
-int player = 1;
-char mark = 'X';
-int turn = 1;
-bool gameOver = false;
 bool player1Turn = true;
+char mark = 'X';
+bool gameOver = false;
 
 void TicTacToe()
 {
@@ -18,7 +16,7 @@ void TicTacToe()
     {
         system("cls");
         displayBoard();
-        determinePlayer();
+        determineMark();
         playerMove();
         if (checkWin())
             winScreen();
@@ -61,25 +59,16 @@ void displayBoard()
     }
 }
 
-void determinePlayer()
+void determineMark()
 {
-    if (turn % 2 != 0)
-    {
-        player = 1;
-        mark = 'X';
-    }
-    else
-    {
-        player = 2;
-        mark = 'O';
-    }
+    mark = player1Turn ? 'X' : 'O';
 }
 
 void playerMove()
 {
     int row, col;
 
-    cout << "Player " << (player1Turn ? "1(X)" : "2(O)") << " enter your move (row and column): ";
+    cout << "Player " << (player1Turn ? "1(X)" : "2(O)") << ", enter your move (row and column): ";
     cin >> row >> col;
 
     // Checks if the user choice is valid by seeing if its in the range and the position is empty

@@ -3,7 +3,7 @@
 
 void initializeBoard();
 void displayBoard();
-void determinePlayer();
+void determineMark();
 void playerMove();
 bool checkWin();
 bool checkDraw();
