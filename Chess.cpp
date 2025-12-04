@@ -13,6 +13,7 @@ bool rightWhiteRookMoved = false;
 bool leftWhiteRookMoved = false;
 bool rightBlackRookMoved = false;
 bool leftBlackRookMoved = false;
+int enPassantCol = -1;
 
 void initializeBoard(char board[8][8])
 {
@@ -218,6 +219,14 @@ bool isValidPawnMove(int sr, int sc, int er, int ec, char board[8][8])
     if (abs(ec - sc) == 1 && er == (sr + direction) && board[er][ec] != ' ')
         return true;
 
+    // Logic for En Passant rule
+    if (abs(ec - sc) == 1 && er == (sr + direction && board[er][ec] == ' '))
+    {
+        if (isWhiteTurn && sr == 3 && ec == enPassantCol)
+            return true;
+        else if (!isWhiteTurn && sr == 4 && ec == enPassantCol)
+            return true;
+    }
     return false;
 }
 
@@ -360,13 +369,17 @@ bool isInCheck(char board[8][8])
 
 bool isMoveResultingInCheck(int sr, int sc, int er, int ec, char board[8][8])
 {
-    // Creates a caopy of the current board
+    // Creates a copy of the current board
     char tempBoard[8][8];
     for (int i = 0; i < 8; i++)
     {
         for (int j = 0; j < 8; j++)
             tempBoard[i][j] = board[i][j];
     }
+
+    // Handles the exceptional case of En-Passant capturing
+    if (tolower(tempBoard[sr][sc]) == 'p' && tempBoard[er][ec] == ' ' && abs(ec - sc) == 1)
+        tempBoard[sr][ec] == ' ';
 
     // Makes the move in the fake board to see if there results a check
     tempBoard[er][ec] = tempBoard[sr][sc];
@@ -555,7 +568,7 @@ void PawnPromotion(char board[8][8], int row, int col)
 }
 
 // The final function that moves the piece after all the validation
-void makeMove(int sr, int sc, int er, int ec, char (&board)[8][8])
+void makeMove(int sr, int sc, int er, int ec, char board[8][8])
 {
     // Displays a capture message if the place the piece was moved was occupied by an enemy piece
     if (board[er][ec] != ' ')
@@ -566,6 +579,12 @@ void makeMove(int sr, int sc, int er, int ec, char (&board)[8][8])
         string enemyColour = isWhiteTurn ? "black" : "white";
 
         cout << playerColour << "'s " << playerPiece << " captured " << enemyColour << "'s " << enemyPiece << endl;
+    }
+    // Hanles En-Passant capturing
+    else if (tolower(board[sr][sc]) == 'p' && board[er][ec] == ' ' && abs(ec - sc) == 1)
+    {
+        board[sr][ec] = ' ';
+        cout << (isWhiteTurn ? "White" : "Black") << " performed En Passant capture" << endl;
     }
 
     // Logic for castling
@@ -617,6 +636,12 @@ void makeMove(int sr, int sc, int er, int ec, char (&board)[8][8])
         leftBlackRookMoved = true;
     else if (sr == 0 && sc == 7 && board[er][ec] == 'r')
         rightBlackRookMoved = true;
+
+    // Saves the column for En Passant
+    if (tolower(board[er][ec] == 'p') && abs(er - sr) == 2)
+        enPassantCol = ec;
+    else
+        enPassantCol = -1;
 
     // Handles pawn promotion
     if ((board[er][ec] == 'P' && er == 0) || board[er][ec] == 'p' && er == 7)
