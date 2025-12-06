@@ -3,6 +3,7 @@
 #include "TicTacToe.h"
 #include "Chess.h"
 #include "GuessTheNumber.h"
+#include "Hangman.h"
 using namespace std;
 
 void showMenu(); // funtcion prototype
@@ -12,6 +13,7 @@ int main()
     int choice;
     do
     { // a loop that keeps asking the user which game they want to play until they exit it.,
+        clearScreen();
         showMenu();
         choice = getIntegerInput("");
         switch (choice)
@@ -20,6 +22,7 @@ int main()
             chess();
             break;
         case 2:
+            Hangman();
             break;
         case 3:
             GuessTheNumber();

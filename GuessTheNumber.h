@@ -3,5 +3,6 @@
 
 void GuessTheNumber();
 void playRound(int score);
+std::string getRandomWord();
 
 #endif
