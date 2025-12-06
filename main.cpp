@@ -1,6 +1,7 @@
 #include <iostream>
 #include "TicTacToe.h"
 #include "Chess.h"
+#include "GuessTheNumber.h"
 using namespace std;
 
 void showMenu(); // funtcion prototype
@@ -20,6 +21,7 @@ int main()
         case 2:
             break;
         case 3:
+            GuessTheNumber();
             break;
         case 4:
             break;
