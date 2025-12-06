@@ -1,4 +1,5 @@
 #include <iostream>
+#include "utilities.h"
 #include "TicTacToe.h"
 #include "Chess.h"
 #include "GuessTheNumber.h"
@@ -12,7 +13,7 @@ int main()
     do
     { // a loop that keeps asking the user which game they want to play until they exit it.,
         showMenu();
-        cin >> choice;
+        choice = getIntegerInput("");
         switch (choice)
         {
         case 1:

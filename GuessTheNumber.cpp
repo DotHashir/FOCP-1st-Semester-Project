@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include "utilities.h"
 #include "GuessTheNumber.h"
 using namespace std;
 
@@ -43,8 +44,7 @@ void playRound(int score)
 
     for (int i = 0; i < 10; i++)
     {
-        cout << "Guess a number between 1-50: ";
-        cin >> guess;
+        guess = getIntegerInput("Guess a number between 1-50: ");
         attempts++;
 
         // If guessed number is out of range

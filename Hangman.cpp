@@ -1,10 +1,11 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
-#include <vector>
 #include <ctime>
 #include <algorithm>
+#include "utilities.h"
 using namespace std;
+
 void displayHangman(int attemptsLeft)
 {
     switch (attemptsLeft)
@@ -57,11 +58,7 @@ int main()
 
     while (blankWord != word && attemptsLeft > 0)
     {
-#ifdef _WIN32
-        system("CLS");
-#else
-        system("clear");
-#endif
+        clearScreen();
 
         displayHangman(attemptsLeft);
 
@@ -76,20 +73,16 @@ int main()
                 cout << wrongGuesses[i] << " ";
         }
 
-        cout << "\nAttempts remaining: " << attemptsLeft;
+        cout << "\nAttempts remaining: " << attemptsLeft << endl;
 
-        cout << "\nEnter your guess: ";
-        cin >> guess;
-        guess = tolower(guess);
+        guess = getCharacterInput("Enter your guess: ");
 
         if (blankWord.find(guess) != string::npos || find(wrongGuesses, wrongGuesses + 6, guess) != wrongGuesses + 6)
         {
             cout << "\n====================================" << endl;
             cout << "  You already guessed that letter!";
             cout << "\n====================================" << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
+            pauseScreen();
             continue;
         }
         bool correct = false;
@@ -106,9 +99,7 @@ int main()
             cout << "\n========================" << endl;
             cout << "      Good Guess!";
             cout << "\n========================" << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
+            pauseScreen();
         }
 
         if (!correct)
@@ -119,9 +110,7 @@ int main()
             cout << "\n====================================" << endl;
             cout << "       Wrong Guess! Try Again!";
             cout << "\n====================================" << endl;
-            cout << "Press Enter to continue...";
-            cin.ignore();
-            cin.get();
+            pauseScreen();
         }
     }
     cout << "\n======================================================" << endl;
@@ -129,6 +118,8 @@ int main()
         cout << "\n  Congratulations! You guessed the word right!: " << word << endl;
     else
         cout << "\n  You could not guess right! The word was: " << word << endl;
+
     cout << "\n======================================================" << endl;
+    pauseScreen();
     return 0;
 }

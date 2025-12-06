@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <limits>
+#include "utilities.h"
 #include "Chess.h"
 using namespace std;
 
@@ -32,7 +33,7 @@ void chess()
 
         if (isValidMove(sr, sc, er, ec, board, false))
         {
-            system("cls");
+            clearScreen();
 
             makeMove(sr, sc, er, ec, board);
             printBoard(board);
@@ -621,22 +622,12 @@ bool hasAnyLegalMove(char board[8][8])
 // Handles logic for pawn promotion
 void PawnPromotion(char board[8][8], int row, int col)
 {
-    string input;
     char choice;
 
     // Infinite loop until user makes a valid input
     while (true)
     {
-        // Below logic correctly deals if the user enters a string instead of a character
-        cout << "Which piece do you want to promote your pawn to(Q, N, R, B): ";
-        cin >> input;
-
-        // Makes the choice only equal to the first letter of the string user enetered
-        choice = input[0];
-        choice = tolower(choice);
-
-        // Ignores the remaining part of the string
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        choice = getCharacterInput("Which piece do you want to promote your pawn to(Q, N, R, B): ");
 
         if (choice == 'q' || choice == 'n' || choice == 'r' || choice == 'b')
         {
