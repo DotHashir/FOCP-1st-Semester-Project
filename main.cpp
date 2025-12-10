@@ -4,6 +4,7 @@
 #include "Chess.h"
 #include "GuessTheNumber.h"
 #include "Hangman.h"
+#include "Connect4.h"
 using namespace std;
 
 void showMenu(); // funtcion prototype
@@ -33,6 +34,7 @@ int main()
             TicTacToe();
             break;
         case 6:
+            Connect4();
             break;
         case 0:
             cout << "Thank you for playing at Game Hub!"; // exits loop

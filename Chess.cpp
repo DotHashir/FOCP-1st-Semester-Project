@@ -53,7 +53,7 @@ void chess()
     }
 }
 
-void initializeBoard(char board[8][8])
+static void initializeBoard(char board[8][8])
 {
     // Insert blank spaces on all board
     for (int i = 0; i < 8; i++)
@@ -77,7 +77,7 @@ void initializeBoard(char board[8][8])
     }
 }
 
-void printBoard(char board[8][8])
+static void printBoard(char board[8][8])
 {
     // Writes headers A-H on top of board with buffer in the start
     cout << "  ";
@@ -116,7 +116,7 @@ void printBoard(char board[8][8])
 }
 
 // Handles player input and verifies its correct format
-void playerInput(int &sr, int &sc, int &er, int &ec)
+static void playerInput(int &sr, int &sc, int &er, int &ec)
 {
     // Keeps asking the user for input until correct answer is not given
     while (true)
@@ -156,7 +156,7 @@ void playerInput(int &sr, int &sc, int &er, int &ec)
 }
 
 // The final function that moves the piece after all the validation
-void makeMove(int sr, int sc, int er, int ec, char board[8][8])
+static void makeMove(int sr, int sc, int er, int ec, char board[8][8])
 {
     // Displays a capture message if the place the piece was moved was occupied by an enemy piece
     if (board[er][ec] != ' ')

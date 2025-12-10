@@ -1,12 +1,12 @@
 #ifndef TICTACTOE_H
 #define TICTACTOE_H
 
-void initializeBoard();
-void displayBoard();
+static void initializeBoard();
+static void printBoard();
 void determineMark();
 void playerMove();
-bool checkWin();
-bool checkDraw();
+static bool isWin();
+static bool isDraw();
 void winScreen();
 void drawScreen();
 void TicTacToe();

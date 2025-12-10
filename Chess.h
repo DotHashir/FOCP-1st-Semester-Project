@@ -3,10 +3,10 @@
 #define CHESS_H
 
 void chess();
-void initializeBoard(char board[8][8]);
-void printBoard(char board[8][8]);
-void playerInput(int &sr, int &sc, int &er, int &ec);
-void makeMove(int sr, int sc, int er, int ec, char board[8][8]);
+static void initializeBoard(char board[8][8]);
+static void printBoard(char board[8][8]);
+static void playerInput(int &sr, int &sc, int &er, int &ec);
+static void makeMove(int sr, int sc, int er, int ec, char board[8][8]);
 bool isValidMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode);
 bool isValidPieceMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode);
 bool isValidPawnMove(int sr, int sc, int er, int ec, char board[8][8]);

@@ -16,17 +16,17 @@ void TicTacToe()
     while (!gameOver)
     {
         clearScreen();
-        displayBoard();
+        printBoard();
         determineMark();
         playerMove();
-        if (checkWin())
+        if (isWin())
             winScreen();
-        else if (checkDraw())
+        else if (isDraw())
             drawScreen();
     }
 }
 
-void initializeBoard()
+static void initializeBoard()
 {
     // Places empty space in the entire board
     for (int i = 0; i < 3; i++)
@@ -34,7 +34,7 @@ void initializeBoard()
             board[i][j] = ' ';
 }
 
-void displayBoard()
+static void printBoard()
 {
     // Display column numbers on top
     cout << "  0 1 2\n";
@@ -85,7 +85,7 @@ void playerMove()
     }
 }
 
-bool checkWin()
+static bool isWin()
 {
     // Checks through each row and column
     for (int i = 0; i < 3; i++)
@@ -105,7 +105,7 @@ bool checkWin()
     return false;
 }
 
-bool checkDraw()
+static bool isDraw()
 {
     // Checks if any place is not occupied by X or O
     for (int i = 0; i < 3; i++)
@@ -123,7 +123,7 @@ bool checkDraw()
 void winScreen()
 {
     clearScreen();
-    displayBoard();
+    printBoard();
     cout << "**************************************************" << endl;
     cout << "CONGRATULATIONS! Player " << (player1Turn ? "1(X)" : "2(O)") << " WINS !" << endl;
     cout
@@ -135,7 +135,7 @@ void winScreen()
 void drawScreen()
 {
     clearScreen();
-    displayBoard();
+    printBoard();
     cout << "**************************************************" << endl;
     cout << "The game is a draw" << endl;
     cout << "**************************************************" << endl;
