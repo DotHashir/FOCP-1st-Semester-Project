@@ -5,51 +5,81 @@
 #include "GuessTheNumber.h"
 using namespace std;
 
+const int MAX_RANGE = 50;
+const int MAX_GUESSES = 10;
+bool gameOver = false;
+
 void GuessTheNumber()
 {
     int score = 0;
     int choice = 1;
     srand(time(0));
 
+    initializeGame();
+
     cout << "----------NUMBER GUESSING GAME----------" << endl
          << "You have ten guesses max to guess the number" << endl;
 
-    do
+    while (!gameOver)
     {
         playRound(score);
+
+        if (gameOver)
+            break;
 
         // Keeps asking the user until correct input
         while (true)
         {
-            cout << "Press 1 if you want to play again and 0 if you want to quit: ";
-            cin >> choice;
+            getIntegerInput("Press 1 to play again, 0 to quit: ");
 
-            if (choice == 0 || choice == 1)
+            if (choice == 0)
                 break;
+            else if (choice == 1)
+            {
+                gameOver = true;
+                break;
+            }
             else
                 cout << "Error: Wrong input" << endl;
         }
-    } while (choice == 1);
+    }
 
     cout << "Game over! Your final score is: " << score << endl;
 }
 
-void playRound(int score)
+static void initializeGame()
+{
+    gameOver = false;
+}
+
+void playRound(int &score)
 {
     int guess;
     int attempts = 0;
 
-    // Generates a random number between 1 and 50
-    int number = rand() % 50 + 1;
+    // Generates a random number between 1 and MAX_RANGE
+    int number = rand() % MAX_RANGE + 1;
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < MAX_GUESSES; i++)
     {
-        guess = getIntegerInput("Guess a number between 1-50: ");
+        cout << "Guess a number between 1-" << MAX_RANGE << " (-1 to exit): ";
+        guess = getIntegerInput("");
         attempts++;
 
+        // Ends the game if user enters quit
+        if (guess == -1)
+        {
+            cout << "======================================================" << endl
+                 << "You exited the game!" << endl
+                 << "======================================================" << endl;
+            gameOver = true;
+            pauseScreen();
+            return;
+        }
+
         // If guessed number is out of range
-        if (guess > 50 || guess < 1)
-            cout << "Invalid input. The number does not lie between 1-50." << endl;
+        if (guess > MAX_RANGE || guess < 1)
+            cout << "Invalid input. The number does not lie between 1-" << MAX_RANGE << endl;
 
         // Correct guess
         else if (number == guess)
@@ -68,17 +98,17 @@ void playRound(int score)
 
         // Wrong guess logic
         else if (guess + 5 < number)
-            cout << "Your guess is too low!" << endl;
-        else if (guess < number)
             cout << "Your guess is low!" << endl;
+        else if (guess < number)
+            cout << "Your guess is low, but very close!" << endl;
         else if (guess - 5 > number)
-            cout << "Your guess is too high!" << endl;
-        else if (guess > number)
             cout << "Your guess is high!" << endl;
+        else if (guess > number)
+            cout << "Your guess is high, but very close!" << endl;
 
         // If guess is not correct and it is not the last attempt, show the attempts remaining
         if (guess != number && i != 9)
-            cout << "Attempts left: " << 10 - attempts << endl
+            cout << "Attempts left: " << MAX_GUESSES - attempts << endl
                  << endl;
     }
 }

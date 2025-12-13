@@ -4,13 +4,21 @@
 #include "TicTacToe.h"
 using namespace std;
 
-char board[3][3];
+static const int BOARD_SIZE = 3;
+
+static char board[BOARD_SIZE][BOARD_SIZE];
 bool player1Turn = true;
 char mark = 'X';
 static bool gameOver = false;
 
 void TicTacToe()
 {
+    cout << "==============================" << endl
+         << "  Welcome to Tic Tac Toe!" << endl
+         << "==============================" << endl;
+    pauseScreen();
+
+    initializeGame();
     initializeBoard();
 
     while (!gameOver)
@@ -23,39 +31,53 @@ void TicTacToe()
             winScreen();
         else if (isDraw())
             drawScreen();
+        else
+            player1Turn = !player1Turn;
     }
+}
+
+static void initializeGame()
+{
+    player1Turn = true;
+    char mark = 'X';
+    gameOver = false;
 }
 
 static void initializeBoard()
 {
     // Places empty space in the entire board
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
+    for (int i = 0; i < BOARD_SIZE; i++)
+        for (int j = 0; j < BOARD_SIZE; j++)
             board[i][j] = ' ';
 }
 
 static void printBoard()
 {
     // Display column numbers on top
-    cout << "  0 1 2\n";
+    cout << "  1 2 3\n";
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
         // Display row numbers on left
-        cout << i << " ";
+        cout << i + 1 << " ";
 
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
-            cout << board[i][j];
+            if (board[i][j] == 'X')
+                cout << RED << "X" << RESET;
+            else if (board[i][j] == 'O')
+                cout << CYAN << "O" << RESET;
+            else
+                cout << " ";
 
             // Display the seperation between columns
-            if (j < 2)
+            if (j < BOARD_SIZE - 1)
                 cout << "|";
         }
 
         cout << endl;
         // Display the seperation between rows
-        if (i < 2)
+        if (i < BOARD_SIZE - 1)
             cout << "  -----\n";
     }
 }
@@ -67,28 +89,44 @@ void determineMark()
 
 void playerMove()
 {
-    int row, col;
+    int choice, row, col;
 
-    cout << "Player " << (player1Turn ? "1(X)" : "2(O)") << ", enter your move (row and column): ";
-    cin >> row >> col;
+    while (true)
+    {
+        cout << "Player " << (player1Turn ? RED : CYAN) << (player1Turn ? "1(X)" : "2(O)") << RESET << ", enter your move (1-9) (0 to exit): ";
+        choice = getIntegerInput("");
 
-    // Checks if the user choice is valid by seeing if its in the range and the position is empty
-    if (row >= 0 && row < 3 && col >= 0 && col < 3 && board[row][col] == ' ')
-    {
-        board[row][col] = mark;
-        player1Turn = !player1Turn;
-    }
-    else
-    {
-        cout << "Invalid move. Try again.\n";
-        playerMove();
+        // Ends the game if user enters 0
+        if (choice == 0)
+        {
+            cout << "======================================================" << endl
+                 << "You exited the game!" << endl
+                 << "======================================================" << endl;
+            gameOver = true;
+            pauseScreen();
+            break;
+        }
+
+        row = (choice - 1) / BOARD_SIZE;
+        col = (choice - 1) % BOARD_SIZE;
+
+        // Checks if the user choice is valid by seeing if its in the range and the position is empty
+        if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE && board[row][col] == ' ')
+        {
+            board[row][col] = mark;
+            break;
+        }
+        else
+        {
+            cout << "Invalid move. Try again.\n";
+        }
     }
 }
 
 static bool isWin()
 {
     // Checks through each row and column
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
         if (board[i][0] == mark && board[i][1] == mark && board[i][2] == mark)
             return true;
@@ -108,9 +146,9 @@ static bool isWin()
 static bool isDraw()
 {
     // Checks if any place is not occupied by X or O
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
             if (board[i][j] != 'X' && board[i][j] != 'O')
                 return false;
@@ -120,19 +158,19 @@ static bool isDraw()
     return true;
 }
 
-void winScreen()
+static void winScreen()
 {
     clearScreen();
     printBoard();
     cout << "**************************************************" << endl;
-    cout << "CONGRATULATIONS! Player " << (player1Turn ? "1(X)" : "2(O)") << " WINS !" << endl;
+    cout << "CONGRATULATIONS! Player " << (player1Turn ? RED : CYAN) << (player1Turn ? "1(X)" : "2(O)") << RESET << " Won!" << endl;
     cout
         << "**************************************************" << endl;
     gameOver = true;
     pauseScreen();
 }
 
-void drawScreen()
+static void drawScreen()
 {
     clearScreen();
     printBoard();

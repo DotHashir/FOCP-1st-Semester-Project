@@ -20,8 +20,17 @@ int enPassantCol = -1;
 
 void chess()
 {
+    cout << "==============================" << endl
+         << "     Welcome to Chess!" << endl
+         << "==============================" << endl;
+    pauseScreen();
+    clearScreen();
+
     char board[8][8];
     initializeBoard(board);
+
+    cout << "At any point you can input '" << YELLOW << "quit" << RESET << "' to exit the game" << endl;
+
     printBoard(board);
     int sr, sc, er, ec; // start row, start column, end row, end column
     while (!gameOver)
@@ -51,6 +60,19 @@ void chess()
                 cout << "WARNING! " << (isWhiteTurn ? "White's" : "Black's") << " king is in check" << endl;
         }
     }
+}
+
+static void initializeGame()
+{
+    isWhiteTurn = true;
+    gameOver = false;
+    whiteKingMoved = false;
+    blackKingMoved = false;
+    rightWhiteRookMoved = false;
+    leftWhiteRookMoved = false;
+    rightBlackRookMoved = false;
+    leftBlackRookMoved = false;
+    enPassantCol = -1;
 }
 
 static void initializeBoard(char board[8][8])
@@ -93,7 +115,14 @@ static void printBoard(char board[8][8])
 
         for (int j = 0; j < 8; j++)
         {
-            cout << board[i][j];
+            string bg = ((i + j) % 2 == 0) ? BG_LIGHT : BG_DARK;
+
+            if (isupper(board[i][j]))
+                cout << bg << RED << board[i][j] << RESET;
+            else if (islower(board[i][j]))
+                cout << bg << BLUE << board[i][j] << RESET;
+            else
+                cout << bg << board[i][j] << RESET;
 
             // Inserts seperation between columns
             if (j < 7)
@@ -122,13 +151,17 @@ static void playerInput(int &sr, int &sc, int &er, int &ec)
     while (true)
     {
         string input;
-        cout << (isWhiteTurn ? "White's turn (P, R, N...): " : "Black's turn (p, r, n...): ");
+        cout << (isWhiteTurn ? RED : BLUE) << (isWhiteTurn ? "White's turn (P, R, N...): " : "Black's turn (p, r, n...): ") << RESET;
         getline(cin, input);
 
         // Ends the game if user enters quit
         if (input == "quit")
         {
+            cout << "======================================================" << endl
+                 << "You exited the game!" << endl
+                 << "======================================================" << endl;
             gameOver = true;
+            pauseScreen();
             break;
         }
         // Verifies that the input format is correct
@@ -236,7 +269,7 @@ static void makeMove(int sr, int sc, int er, int ec, char board[8][8])
         PawnPromotion(board, er, ec);
 }
 
-bool isValidMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode)
+static bool isValidMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode)
 {
     // Checks if the starting position is an empty space
     if (board[sr][sc] == ' ')
@@ -584,7 +617,7 @@ bool isSquareAttacked(int row, int col, char board[8][8])
                     return true;
                 break;
             case 'k':
-                if (isValidKingMove(i, j, row, col, board))
+                if (abs(row - i) <= 1 && abs(col - j) <= 1)
                     return true;
                 break;
             }
@@ -644,7 +677,7 @@ void PawnPromotion(char board[8][8], int row, int col)
 }
 
 // Checks if the piece passed to it belongs to the current player
-bool isCurrentPlayerPiece(char piece)
+static bool isCurrentPlayerPiece(char piece)
 {
     if (isWhiteTurn && (piece >= 'A' && piece <= 'Z'))
         return true;

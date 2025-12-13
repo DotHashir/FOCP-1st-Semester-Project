@@ -3,11 +3,12 @@
 #define CHESS_H
 
 void chess();
+static void initializeGame();
 static void initializeBoard(char board[8][8]);
 static void printBoard(char board[8][8]);
 static void playerInput(int &sr, int &sc, int &er, int &ec);
 static void makeMove(int sr, int sc, int er, int ec, char board[8][8]);
-bool isValidMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode);
+static bool isValidMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode);
 bool isValidPieceMove(int sr, int sc, int er, int ec, char board[8][8], bool quietMode);
 bool isValidPawnMove(int sr, int sc, int er, int ec, char board[8][8]);
 bool isValidRookMove(int sr, int sc, int er, int ec, char board[8][8]);
@@ -24,7 +25,7 @@ void findKing(int &kr, int &kc, char board[8][8]);
 bool isSquareAttacked(int row, int col, char board[8][8]);
 bool hasAnyLegalMove(char board[8][8]);
 void PawnPromotion(char board[8][8], int row, int col);
-bool isCurrentPlayerPiece(char piece);
+static bool isCurrentPlayerPiece(char piece);
 std::string getPieceName(char piece);
 
 #endif

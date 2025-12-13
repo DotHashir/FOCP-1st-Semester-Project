@@ -3,9 +3,12 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
+#include <cctype>
 #include "utilities.h"
 #include "Hangman.h"
 using namespace std;
+
+const int MAX_LIVES = 6;
 
 void Hangman()
 {
@@ -16,15 +19,16 @@ void Hangman()
     // Sets a blanck word equal to the length of the word to be guessed
     string blankWord(word.length(), '_');
 
-    char wrongGuesses[6] = {};
+    char wrongGuesses[MAX_LIVES] = {};
     int wrongGuessesCount = 0;
 
-    int attemptsLeft = 6;
+    int attemptsLeft = MAX_LIVES;
     char guess;
 
     cout << "==============================" << endl
          << "     Welcome to Hangman!" << endl
          << "==============================" << endl;
+    pauseScreen();
 
     // Continue as long as word has not been guessed or o attempts are left
     while (blankWord != word && attemptsLeft > 0)
@@ -40,7 +44,7 @@ void Hangman()
 
         // Displays all the charcters that have been wrongly guessed
         cout << "\nWrong guesses: ";
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < MAX_LIVES; i++)
         {
             if (wrongGuesses[i] != '\0')
                 cout << wrongGuesses[i] << " ";
@@ -48,7 +52,25 @@ void Hangman()
 
         cout << "\nAttempts remaining: " << attemptsLeft << endl;
 
-        guess = getCharacterInput("Enter your guess: ");
+        while (true)
+        {
+            guess = getCharacterInput("Enter your guess(0 to exit): ");
+
+            // Ends the game if user enters 0
+            if (guess == '0')
+            {
+                cout << "======================================================" << endl
+                     << "You exited the game!" << endl
+                     << "======================================================" << endl;
+                pauseScreen();
+                return;
+            }
+
+            if (!isalpha(guess))
+                cout << "Please enter a valid letter (a-z)" << endl;
+            else
+                break;
+        }
 
         if (isAlreadyGuessed(blankWord, guess, wrongGuesses))
             continue;
@@ -72,9 +94,9 @@ void Hangman()
     // Message for end of the game
     cout << "\n======================================================" << endl;
     if (blankWord == word)
-        cout << "\n  Congratulations! You guessed the word right!: " << word << endl;
+        cout << "\n  Congratulations! You guessed the word right!: " << GREEN << word << RESET << endl;
     else
-        cout << "\n  You could not guess right! The word was: " << word << endl;
+        cout << "\n  You could not guess right! The word was: " << RED << word << RESET << endl;
 
     cout << "\n======================================================" << endl;
     pauseScreen();
@@ -123,10 +145,10 @@ string getRandomWord()
 bool isAlreadyGuessed(string blankWord, char guess, char wrongGuesses[])
 {
     // Looks though the blankWord for guess and returns true if found or looks though the entire wrongGuesses array and returns true if it doesnt reach the end of array
-    if (blankWord.find(guess) != string::npos || find(wrongGuesses, wrongGuesses + 6, guess) != wrongGuesses + 6)
+    if (blankWord.find(guess) != string::npos || find(wrongGuesses, wrongGuesses + MAX_LIVES, guess) != wrongGuesses + MAX_LIVES)
     {
         cout << "\n====================================" << endl
-             << "  You already guessed that letter!" << endl
+             << YELLOW << "  You already guessed that letter!" << RESET << endl
              << "====================================" << endl;
         pauseScreen();
         return true;
@@ -151,7 +173,7 @@ bool isCorrectGuess(string word, string &blankWord, char guess)
     if (correct)
     {
         cout << "\n========================" << endl
-             << "      Good Guess!" << endl
+             << GREEN << "      Good Guess!" << RESET << endl
              << "========================" << endl;
         pauseScreen();
         return true;
@@ -159,7 +181,7 @@ bool isCorrectGuess(string word, string &blankWord, char guess)
 
     // Deals with wrong guess
     cout << "\n====================================" << endl
-         << "       Wrong Guess! Try Again!" << endl
+         << RED << "       Wrong Guess! Try Again!" << RESET << endl
          << "====================================" << endl;
     pauseScreen();
     return false;

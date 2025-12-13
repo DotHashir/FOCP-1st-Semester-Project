@@ -5,7 +5,11 @@
 #include "Checkers.h"
 using namespace std;
 
-static char board[8][8];
+static const int BOARD_SIZE = 8;
+const char BLACK_PIECE = 'b';
+const char WHITE_PIECE = 'w';
+
+static char board[BOARD_SIZE][BOARD_SIZE];
 bool isBlackTurn = true;
 static bool gameOver = false;
 int chainRow, chainCol;
@@ -13,13 +17,27 @@ bool chainJump = false;
 
 void checkers()
 {
+    cout << "==============================" << endl
+         << "     Welcome to Checkers!" << endl
+         << "==============================" << endl;
+    pauseScreen();
+    clearScreen();
+
     int sr, sc, er, ec;
 
+    initializeGame();
     initializeBoard();
+
+    cout << "At any point you can input '" << YELLOW << "quit" << RESET << "' to exit the game" << endl;
+
     while (!gameOver)
     {
         printBoard();
         playerInput(sr, sc, er, ec);
+
+        if (gameOver)
+            break;
+
         if (isValidMove(sr, sc, er, ec, false))
         {
             clearScreen();
@@ -33,19 +51,26 @@ void checkers()
     }
 }
 
+static void initializeGame()
+{
+    isBlackTurn = true;
+    gameOver = false;
+    chainJump = false;
+}
+
 static void initializeBoard()
 {
     // Insert blank spaces on all board
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
             board[i][j] = ' ';
     }
 
     // Initializes white's pieces
     for (int i = 0; i < 3; i++)
     {
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
             if ((i + j) % 2 != 0)
                 board[i][j] = 'w';
@@ -55,7 +80,7 @@ static void initializeBoard()
     // Initializes black's pieces
     for (int i = 5; i < 8; i++)
     {
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
             if ((i + j) % 2 != 0)
                 board[i][j] = 'b';
@@ -67,19 +92,26 @@ static void printBoard()
 {
     // Writes headers A-H on top of board with buffer in the start
     cout << "  ";
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
         cout << char('A' + i) << ' ';
 
     cout << endl;
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
         // Writes row numbers on the left side of the board
-        cout << 8 - i << ' ';
+        cout << BOARD_SIZE - i << ' ';
 
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
-            cout << board[i][j];
+            string bg = ((i + j) % 2 == 0) ? BG_LIGHT : BG_DARK;
+
+            if (tolower(board[i][j]) == 'w')
+                cout << bg << BLUE << board[i][j] << RESET;
+            else if (tolower(board[i][j]) == 'b')
+                cout << bg << RED << board[i][j] << RESET;
+            else
+                cout << bg << board[i][j] << RESET;
 
             // Inserts seperation between columns
             if (j < 7)
@@ -87,7 +119,7 @@ static void printBoard()
         }
 
         // Writes row numbers on the right
-        cout << ' ' << 8 - i << endl;
+        cout << ' ' << BOARD_SIZE - i << endl;
 
         // Inserts seperation between rows
         cout << "  ";
@@ -96,7 +128,7 @@ static void printBoard()
 
     // Writes headers A-H on bottom of board with buffer in the start
     cout << "  ";
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
         cout << char('A' + i) << ' ';
     cout << endl;
 }
@@ -108,7 +140,7 @@ static void playerInput(int &sr, int &sc, int &er, int &ec)
     while (true)
     {
         string input;
-        cout << (isBlackTurn ? "Black's turn: " : "White's turn: ");
+        cout << (isBlackTurn ? RED : BLUE) << (isBlackTurn ? "Black's turn: " : "White's turn: ") << RESET;
         getline(cin, input);
 
         // Ends the game if user enters quit
@@ -126,12 +158,12 @@ static void playerInput(int &sr, int &sc, int &er, int &ec)
 
         // Breaks up the input into starting row, column and ending row, column
         sc = tolower(input[0]) - 'a';
-        sr = '8' - input[1];
+        sr = static_cast<char>(BOARD_SIZE) - input[1];
         ec = tolower(input[3]) - 'a';
-        er = '8' - input[4];
+        er = static_cast<char>(BOARD_SIZE) - input[4];
 
         // Checks that the row and column input are within the range of the board
-        if (sr < 0 || sr >= 8 || sc < 0 || sc >= 8 || er < 0 || er >= 8 || ec < 0 || ec >= 8)
+        if (sr < 0 || sr >= BOARD_SIZE || sc < 0 || sc >= BOARD_SIZE || er < 0 || er >= BOARD_SIZE || ec < 0 || ec >= BOARD_SIZE)
         {
             cout << "Error: Invalid coordinates. It must be between a1 and h8" << endl;
             continue;
@@ -152,13 +184,13 @@ static bool isValidMove(int sr, int sc, int er, int ec, bool quietMode)
         if (sr != chainRow || sc != chainCol)
         {
             if (!quietMode)
-                cout << "Error: Multi-jump active. You must move the piece at " << static_cast<char>(chainCol + 'a') << chainRow + 8 << endl;
+                cout << "Error: Multi-jump active. You must move the piece at " << static_cast<char>(chainCol + 'a') << chainRow + BOARD_SIZE << endl;
             return false;
         }
         if (abs(er - sr) != 2 || abs(ec - sc) != 2)
         {
             if (!quietMode)
-                cout << "Error: Multi-jump active. You must capture using the piece at " << static_cast<char>(chainCol + 'a') << chainRow + 8 << endl;
+                cout << "Error: Multi-jump active. You must capture using the piece at " << static_cast<char>(chainCol + 'a') << chainRow + BOARD_SIZE << endl;
             return false;
         }
     }
@@ -238,7 +270,6 @@ static void makeMove(int sr, int sc, int er, int ec)
         // Same piece can now capture other pieces
         if (!piecePromotion(er, ec) && canPieceJump(er, ec))
         {
-            cout << "1" << endl;
             chainJump = true;
             chainRow = er;
             chainCol = ec;
@@ -255,6 +286,7 @@ bool piecePromotion(int er, int ec)
     if (er == 0 && isBlackTurn)
     {
         board[er][ec] = toupper(board[er][ec]);
+        cout << "Piece promoted to king at " << static_cast<char>(ec + 'a') << er + BOARD_SIZE << endl;
         return true;
     }
 
@@ -269,9 +301,9 @@ bool piecePromotion(int er, int ec)
 
 static bool isWin()
 {
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
             if (isCurrentPlayerPiece(i, j))
             {
@@ -280,11 +312,11 @@ static bool isWin()
                     return false;
 
                 // Makes sure that the arguments passed to isValidMove() dont go out of bound
-                if (i + 1 < 8 && j + 1 < 8 && isValidMove(i, j, i + 1, j + 1, true))
+                if (i + 1 < BOARD_SIZE && j + 1 < BOARD_SIZE && isValidMove(i, j, i + 1, j + 1, true))
                     return false;
-                else if (i + 1 < 8 && j - 1 >= 0 && isValidMove(i, j, i + 1, j - 1, true))
+                else if (i + 1 < BOARD_SIZE && j - 1 >= 0 && isValidMove(i, j, i + 1, j - 1, true))
                     return false;
-                else if (i - 1 >= 0 && j + 1 < 8 && isValidMove(i, j, i - 1, j + 1, true))
+                else if (i - 1 >= 0 && j + 1 < BOARD_SIZE && isValidMove(i, j, i - 1, j + 1, true))
                     return false;
                 else if (i - 1 >= 0 && j - 1 >= 0 && isValidMove(i, j, i - 1, j - 1, true))
                     return false;
@@ -315,17 +347,34 @@ bool canPieceJump(int row, int col)
     {
         // All below ifs make sure that the row and column cordinates remain within the bound, has an opponent piece in one digonal jump and an empty space in two diagonal jump
 
-        if (row + direction + direction >= 0 && row + direction + direction < 8 && col + 2 < 8 && isOpponentPiece(row + direction, col + 1) && board[row + direction + direction][col + 2] == ' ')
-            return true;
+        // Directions: Top-Left, Top-Right, Bot-Left, Bot-Right
+        int dr[] = {-1, -1, 1, 1};
+        int dc[] = {-1, 1, -1, 1};
 
-        else if (row + direction + direction >= 0 && row + direction + direction < 8 && col - 2 >= 0 && isOpponentPiece(row + direction, col - 1) && board[row + direction + direction][col - 2] == ' ')
-            return true;
+        for (int i = 0; i < 4; i++)
+        {
+            // The square being jumped over
+            int rMid = row + dr[i];
+            int cMid = col + dc[i];
 
-        else if (row - direction - direction >= 0 && row - direction - direction < 8 && col + 2 < 8 && isupper(board[row][col]) && isOpponentPiece(row - direction, col + 1) && board[row - direction - direction][col + 2] == ' ')
-            return true;
+            // The landing square
+            int rEnd = row + 2 * dr[i];
+            int cEnd = col + 2 * dc[i];
 
-        else if (row - direction - direction >= 0 && row - direction - direction < 8 && col - 2 >= 0 && isupper(board[row][col]) && isOpponentPiece(row - direction, col - 1) && board[row - direction - direction][col - 2] == ' ')
-            return true;
+            // Bounds check
+            if (rEnd < 0 || rEnd >= 8 || cEnd < 0 || cEnd >= 8)
+                continue;
+
+            // Move logic
+            bool isForward = (isBlackTurn && dr[i] == -1) || (!isBlackTurn && dr[i] == 1);
+
+            // If it's a King, or moving forward
+            if (isupper(board[row][col]) || isForward)
+            {
+                if (isOpponentPiece(rMid, cMid) && board[rEnd][cEnd] == ' ')
+                    return true;
+            }
+        }
     }
     return false;
 }
@@ -333,9 +382,9 @@ bool canPieceJump(int row, int col)
 // Checks through entire board if any of the current player's pieces can jump
 bool isJumpAvailable()
 {
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
             if (canPieceJump(i, j))
                 return true;

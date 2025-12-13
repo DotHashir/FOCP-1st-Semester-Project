@@ -2,6 +2,7 @@
 #define CHECKERS_H
 
 void checkers();
+static void initializeGame();
 static void initializeBoard();
 static void printBoard();
 static void playerInput(int &sr, int &sc, int &er, int &ec);

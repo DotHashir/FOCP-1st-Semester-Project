@@ -5,6 +5,7 @@
 #include "GuessTheNumber.h"
 #include "Hangman.h"
 #include "Connect4.h"
+#include "Checkers.h"
 using namespace std;
 
 void showMenu(); // funtcion prototype
@@ -20,27 +21,38 @@ int main()
         switch (choice)
         {
         case 1:
+            clearScreen();
             chess();
             break;
         case 2:
+            clearScreen();
             Hangman();
             break;
         case 3:
+            clearScreen();
             GuessTheNumber();
             break;
         case 4:
             break;
         case 5:
+            clearScreen();
             TicTacToe();
             break;
         case 6:
+            clearScreen();
             Connect4();
             break;
+        case 7:
+            clearScreen();
+            checkers();
+            break;
         case 0:
-            cout << "Thank you for playing at Game Hub!"; // exits loop
+            cout << "Thank you for playing at Game Hub!" << endl; // exits loop
+            pauseScreen();
             break;
         default:
-            cout << "Invalid input. Please choose a number between 0-6."; // shows that the input wasnt one that is defined in the code
+            cout << "Invalid input. Please choose a number between 0-6." << endl; // shows that the input wasnt one that is defined in the code
+            pauseScreen();
         }
         cout << endl;
     } while (choice != 0);
@@ -57,6 +69,7 @@ void showMenu()
     cout << "4. Head or Tails\n";
     cout << "5. Tic Tac Toe\n";
     cout << "6. Connect 4\n";
+    cout << "7. Checkers\n";
     cout << "0. Exit\n";
     cout << "=============================\n";
     cout << "Enter your choice: ";
