@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Utilities.h"
 #include "Connect4.h"
+#include "Stats.h"
 using namespace std;
 
 const int ROWS = 6;
@@ -10,8 +11,10 @@ static char board[ROWS][COLS];
 static int col, row;
 bool isRedTurn = true;
 static bool gameOver = false;
+static int missedWins = 0;
+static bool canWin = false;
 
-void Connect4()
+void Connect4(playerStats &stats)
 {
     cout << "==============================" << endl
          << "     Welcome to Connect 4!" << endl
@@ -24,17 +27,24 @@ void Connect4()
     while (!gameOver)
     {
         printBoard();
+
+        if (isRedTurn)
+            canWinNow();
         playerInput();
         makeMove();
 
         if (isWin())
         {
             winScreen();
+            if (isRedTurn)
+                update_connect4_stats(stats, 1, missedWins);
+            else
+                update_connect4_stats(stats, -1, missedWins);
         }
-
         else if (isDraw())
         {
             drawScreen();
+            update_connect4_stats(stats, 0, missedWins);
         }
 
         isRedTurn = !isRedTurn;
@@ -46,6 +56,8 @@ static void initializeGame()
 {
     isRedTurn = true;
     gameOver = false;
+    missedWins = 0;
+    canWin = false;
 }
 
 static void initializeBoard()
@@ -224,4 +236,48 @@ static void drawScreen()
     cout << "**************************************************" << endl;
     gameOver = true;
     pauseScreen();
+}
+
+static void canWinNow()
+{
+    // If the canWin variable is already true meaning that the player had a winning opportunity last time and still game is continuing
+    if (canWin)
+    {
+        missedWins++;
+        canWin = false;
+    }
+
+    // Save the original cordinates as we'll manipulate the global variables later
+    int originalRow = row;
+    int originalCol = col;
+
+    // Make a test drop in each of the columns
+    for (int c = 0; c < COLS; c++)
+    {
+        // Copy the logic from makeMove();
+        for (int r = ROWS - 1; r >= 0; r--)
+        {
+            if (board[r][c] == ' ')
+            {
+                // Drop a piece and test whether player is wining or not
+                board[r][c] = isRedTurn ? 'R' : 'Y';
+                row = r;
+                col = c;
+
+                if (isWin())
+                    canWin = true;
+
+                // Revert the dropped piece
+                board[r][c] = ' ';
+
+                break;
+            }
+        }
+        // If canWin just skipp all the other columns, no need to look more
+        if (canWin)
+            break;
+    }
+    // Revert the global variables back to their state
+    row = originalRow;
+    col = originalCol;
 }

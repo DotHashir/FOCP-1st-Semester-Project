@@ -4,8 +4,10 @@
 #include <cctype>
 #include <cstdlib>
 #include <limits>
+#include <chrono>
 #include "utilities.h"
 #include "Chess.h"
+#include "Stats.h"
 using namespace std;
 
 bool isWhiteTurn = true;
@@ -17,8 +19,12 @@ bool leftWhiteRookMoved = false;
 bool rightBlackRookMoved = false;
 bool leftBlackRookMoved = false;
 int enPassantCol = -1;
+static int movesMade = 0;
+static double thinkTime = 0.0;
+static double totalThinkTime = 0.0;
+static int materialDifference = 0;
 
-void chess()
+void chess(playerStats &stats)
 {
     cout << "==============================" << endl
          << "     Welcome to Chess!" << endl
@@ -27,6 +33,7 @@ void chess()
     clearScreen();
 
     char board[8][8];
+    initializeGame();
     initializeBoard(board);
 
     cout << "At any point you can input '" << YELLOW << "quit" << RESET << "' to exit the game" << endl;
@@ -42,18 +49,35 @@ void chess()
 
         if (isValidMove(sr, sc, er, ec, board, false))
         {
+            if (isWhiteTurn)
+            {
+                movesMade++;
+                totalThinkTime += thinkTime;
+            }
+
             clearScreen();
 
             makeMove(sr, sc, er, ec, board);
             printBoard(board);
 
-            if (isCheckmate(board))
-                cout << (isWhiteTurn ? "White" : "Black") << " won!" << endl;
-            else if (isStalemate(board))
-                cout << "The game resulted in a stalemate!" << endl;
-
             // Switches player's turn
             isWhiteTurn = !isWhiteTurn;
+
+            if (isCheckmate(board))
+            {
+                winScreen(board);
+                calculateMaterialDifference(board);
+                if (!isWhiteTurn)
+                    update_chess_stats(stats, 1, totalThinkTime, movesMade, materialDifference);
+                else
+                    update_chess_stats(stats, -1, totalThinkTime, movesMade, materialDifference);
+            }
+            else if (isStalemate(board))
+            {
+                stalemateScreen(board);
+                calculateMaterialDifference(board);
+                update_chess_stats(stats, 0, totalThinkTime, movesMade, materialDifference);
+            }
 
             // Checks and displays a warning if the next player's king is in check
             if (isInCheck(board))
@@ -73,6 +97,10 @@ static void initializeGame()
     rightBlackRookMoved = false;
     leftBlackRookMoved = false;
     enPassantCol = -1;
+    movesMade = 0;
+    thinkTime = 0.0;
+    totalThinkTime = 0.0;
+    materialDifference = 0;
 }
 
 static void initializeBoard(char board[8][8])
@@ -152,7 +180,13 @@ static void playerInput(int &sr, int &sc, int &er, int &ec)
     {
         string input;
         cout << (isWhiteTurn ? RED : BLUE) << (isWhiteTurn ? "White's turn (P, R, N...): " : "Black's turn (p, r, n...): ") << RESET;
+
+        auto start = chrono::high_resolution_clock::now();
         getline(cin, input);
+        auto end = chrono::high_resolution_clock::now();
+
+        chrono::duration<double> elapsed = end - start;
+        thinkTime = elapsed.count();
 
         // Ends the game if user enters quit
         if (input == "quit")
@@ -443,7 +477,7 @@ bool isValidQueenMove(int sr, int sc, int er, int ec, char board[8][8])
 bool isValidKingMove(int sr, int sc, int er, int ec, char board[8][8])
 {
     // Logic for castling
-    if (abs(ec - sc == 2))
+    if (abs(ec - sc) == 2)
     {
         // Makes sure that all the conditions for castiling are satisfied
         if (board[sr][sc] == 'K' && er == 7 && ec == 6 && !whiteKingMoved && !rightWhiteRookMoved && isPathClear(sr, sc, er, ec, board) && !isInCheck(board) && !isSquareAttacked(7, 5, board) && !isSquareAttacked(7, 6, board))
@@ -457,7 +491,7 @@ bool isValidKingMove(int sr, int sc, int er, int ec, char board[8][8])
     }
 
     // Check if the movement is only around the king
-    else if (abs(er - sr) > 1 || abs(ec - sc) > 1)
+    if (abs(er - sr) > 1 || abs(ec - sc) > 1)
         return false;
 
     return true;
@@ -708,4 +742,70 @@ string getPieceName(char piece)
     default:
         return "error in fetching piece name";
     }
+}
+
+static void winScreen(char board[8][8])
+{
+    clearScreen();
+    printBoard(board);
+    cout << "**************************************************" << endl;
+    cout << "CONGRATULATIONS! " << (isWhiteTurn ? "Black" : "White") << " Won!" << endl;
+    cout
+        << "**************************************************" << endl;
+    gameOver = true;
+    pauseScreen();
+}
+
+static void stalemateScreen(char board[8][8])
+{
+    clearScreen();
+    printBoard(board);
+    cout << "**************************************************" << endl;
+    cout << "The game resulted in a Stalemate!" << endl;
+    cout
+        << "**************************************************" << endl;
+    gameOver = true;
+    pauseScreen();
+}
+
+static void calculateMaterialDifference(char board[8][8])
+{
+    int enemyPoints = 0;
+    int playerPoints = 0;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            int value = 0;
+            switch (tolower(board[i][j]))
+            {
+            case 'p':
+                value = 1;
+                break;
+            case 'n':
+                value = 3;
+                break;
+            case 'b':
+                value = 3;
+                break;
+            case 'r':
+                value = 5;
+                break;
+            case 'q':
+                value = 9;
+                break;
+            default:
+                value = 0;
+                break;
+            }
+
+            if (isupper(board[i][j]))
+                playerPoints += value;
+            else if (islower(board[i][j]))
+                enemyPoints += value;
+        }
+    }
+
+    materialDifference = playerPoints - enemyPoints;
 }

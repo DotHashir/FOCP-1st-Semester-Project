@@ -1,8 +1,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <cctype>
+#include <chrono>
 #include "Utilities.h"
 #include "Checkers.h"
+#include "Stats.h"
 using namespace std;
 
 static const int BOARD_SIZE = 8;
@@ -14,8 +16,13 @@ bool isBlackTurn = true;
 static bool gameOver = false;
 int chainRow, chainCol;
 bool chainJump = false;
+static int movesMade = 0;
+int captures = 0;
+static double thinkTime = 0.0;
+static double totalThinkTime = 0.0;
+static int materialDifference = 0;
 
-void checkers()
+void checkers(playerStats &stats)
 {
     cout << "==============================" << endl
          << "     Welcome to Checkers!" << endl
@@ -40,13 +47,27 @@ void checkers()
 
         if (isValidMove(sr, sc, er, ec, false))
         {
+            if (isBlackTurn)
+            {
+                movesMade++;
+                totalThinkTime += thinkTime;
+            }
+
             clearScreen();
+
             makeMove(sr, sc, er, ec);
             piecePromotion(er, ec);
-            if (!chainJump)
-                isBlackTurn = !isBlackTurn;
+
             if (isWin())
+            {
                 winScreen();
+                if (isBlackTurn)
+                    update_checkers_stats(stats, 1, totalThinkTime, movesMade, captures, materialDifference);
+                else
+                    update_checkers_stats(stats, -1, totalThinkTime, movesMade, captures, materialDifference);
+            }
+            else if (!chainJump)
+                isBlackTurn = !isBlackTurn;
         }
     }
 }
@@ -56,6 +77,11 @@ static void initializeGame()
     isBlackTurn = true;
     gameOver = false;
     chainJump = false;
+    movesMade = 0;
+    captures = 0;
+    thinkTime = 0.0;
+    totalThinkTime = 0.0;
+    materialDifference = 0;
 }
 
 static void initializeBoard()
@@ -141,7 +167,13 @@ static void playerInput(int &sr, int &sc, int &er, int &ec)
     {
         string input;
         cout << (isBlackTurn ? RED : BLUE) << (isBlackTurn ? "Black's turn: " : "White's turn: ") << RESET;
+
+        auto start = chrono::high_resolution_clock::now();
         getline(cin, input);
+        auto end = chrono::high_resolution_clock::now();
+
+        chrono::duration<double> elapsed = end - start;
+        thinkTime = elapsed.count();
 
         // Ends the game if user enters quit
         if (input == "quit")
@@ -264,6 +296,9 @@ static void makeMove(int sr, int sc, int er, int ec)
 
     if (abs(ec - sc) == 2)
     {
+        if (isBlackTurn)
+            captures++;
+
         board[(er + sr) / 2][(ec + sc) / 2] = ' ';
         cout << "Captured!" << endl;
 
@@ -331,7 +366,7 @@ static void winScreen()
     clearScreen();
     printBoard();
     cout << "**************************************************" << endl;
-    cout << "CONGRATULATIONS! " << (isBlackTurn ? "White" : "BLack") << " Won!" << endl;
+    cout << "CONGRATULATIONS! " << (isBlackTurn ? "Black" : "White") << " Won!" << endl;
     cout
         << "**************************************************" << endl;
     gameOver = true;
@@ -409,4 +444,29 @@ bool isOpponentPiece(int row, int col)
         return true;
 
     return false;
+}
+
+static void calculateMaterialDifference(char board[8][8])
+{
+    int enemyPoints = 0;
+    int playerPoints = 0;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            int value = 0;
+            if (islower(board[i][j]))
+                value = 1;
+            else if (isupper(board[i][j]))
+                value = 3;
+
+            if (tolower(board[i][j]) == 'b')
+                playerPoints += value;
+            else if (tolower(board[i][j]) == 'w')
+                enemyPoints += value;
+        }
+    }
+
+    materialDifference = playerPoints - enemyPoints;
 }

@@ -1,7 +1,8 @@
+#include "Stats.h"
 #ifndef CHECKERS_H
 #define CHECKERS_H
 
-void checkers();
+void checkers(playerStats &stats);
 static void initializeGame();
 static void initializeBoard();
 static void printBoard();
@@ -15,5 +16,6 @@ bool canPieceJump(int row, int col);
 bool isJumpAvailable();
 static bool isCurrentPlayerPiece(int row, int col);
 bool isOpponentPiece(int row, int col);
+static void calculateMaterialDifference(char board[8][8]);
 
 #endif

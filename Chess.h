@@ -1,8 +1,9 @@
 #include <string>
+#include "Stats.h"
 #ifndef CHESS_H
 #define CHESS_H
 
-void chess();
+void chess(playerStats &stats);
 static void initializeGame();
 static void initializeBoard(char board[8][8]);
 static void printBoard(char board[8][8]);
@@ -27,5 +28,8 @@ bool hasAnyLegalMove(char board[8][8]);
 void PawnPromotion(char board[8][8], int row, int col);
 static bool isCurrentPlayerPiece(char piece);
 std::string getPieceName(char piece);
+static void winScreen(char board[8][8]);
+static void stalemateScreen(char board[8][8]);
+static void calculateMaterialDifference(char board[8][8]);
 
 #endif

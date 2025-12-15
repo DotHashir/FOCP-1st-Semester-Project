@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include "utilities.h"
 #include "TicTacToe.h"
+#include "Stats.h"
 using namespace std;
 
 static const int BOARD_SIZE = 3;
@@ -10,8 +11,10 @@ static char board[BOARD_SIZE][BOARD_SIZE];
 bool player1Turn = true;
 char mark = 'X';
 static bool gameOver = false;
+static int missedWins = 0;
+static bool canWin = false;
 
-void TicTacToe()
+void TicTacToe(playerStats &stats)
 {
     cout << "==============================" << endl
          << "  Welcome to Tic Tac Toe!" << endl
@@ -26,11 +29,23 @@ void TicTacToe()
         clearScreen();
         printBoard();
         determineMark();
+        if (player1Turn)
+            canWinNow();
         playerMove();
+
         if (isWin())
+        {
             winScreen();
+            if (player1Turn)
+                update_ttt_stats(stats, 1, missedWins);
+            else
+                update_guess_stats(stats, -1, missedWins);
+        }
         else if (isDraw())
+        {
             drawScreen();
+            update_ttt_stats(stats, 0, missedWins);
+        }
         else
             player1Turn = !player1Turn;
     }
@@ -41,6 +56,8 @@ static void initializeGame()
     player1Turn = true;
     char mark = 'X';
     gameOver = false;
+    missedWins = 0;
+    canWin = false;
 }
 
 static void initializeBoard()
@@ -156,6 +173,72 @@ static bool isDraw()
     }
 
     return true;
+}
+
+static void canWinNow()
+{
+    // If the canWin variable is already true meaning that the player had a winning opportunity last time and still game is continuing
+    if (canWin)
+    {
+        missedWins++;
+        canWin = false;
+    }
+
+    // Checks each row and column
+    for (int i = 0; i < 3; i++)
+    {
+        if (canWinNowLine(board[i][0], board[i][1], board[i][2]))
+        {
+            canWin = true;
+            return;
+        }
+        if (canWinNowLine(board[0][i], board[1][i], board[2][i]))
+        {
+            canWin = true;
+            return;
+        }
+    }
+
+    // Checks diagonals
+    if (canWinNowLine(board[0][0], board[1][1], board[2][2]))
+    {
+        canWin = true;
+        return;
+    }
+    if (canWinNowLine(board[0][2], board[1][1], board[2][0]))
+    {
+        canWin = true;
+        return;
+    }
+}
+
+// Function that helps canWin() function
+bool canWinNowLine(char c1, char c2, char c3)
+{
+    int markCount = 0;
+    int emptyCount = 0;
+
+    // Notes whether each position is current player's mark or an empty place
+    if (c1 == mark)
+        markCount++;
+    else if (c1 == ' ')
+        emptyCount++;
+
+    if (c2 == mark)
+        markCount++;
+    else if (c2 == ' ')
+        emptyCount++;
+
+    if (c3 == mark)
+        markCount++;
+    else if (c3 == ' ')
+        emptyCount++;
+
+    // If their are 2 marks and only 1 empty place meaning that the player can win on this turn
+    if (markCount == 2 && emptyCount == 1)
+        return true;
+
+    return false;
 }
 
 static void winScreen()

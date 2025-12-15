@@ -3,13 +3,14 @@
 #include <ctime>
 #include "utilities.h"
 #include "GuessTheNumber.h"
+#include "Stats.h"
 using namespace std;
 
-const int MAX_RANGE = 50;
+const int MAX_RANGE = 100;
 const int MAX_GUESSES = 10;
 bool gameOver = false;
 
-void GuessTheNumber()
+void GuessTheNumber(playerStats &stats)
 {
     int score = 0;
     int choice = 1;
@@ -22,7 +23,9 @@ void GuessTheNumber()
 
     while (!gameOver)
     {
-        playRound(score);
+        int attempts = playRound(score);
+        if (attempts != -1)
+            update_guess_stats(stats, attempts, MAX_RANGE);
 
         if (gameOver)
             break;
@@ -52,7 +55,7 @@ static void initializeGame()
     gameOver = false;
 }
 
-void playRound(int &score)
+int playRound(int &score)
 {
     int guess;
     int attempts = 0;
@@ -74,7 +77,7 @@ void playRound(int &score)
                  << "======================================================" << endl;
             gameOver = true;
             pauseScreen();
-            return;
+            return -1;
         }
 
         // If guessed number is out of range
@@ -111,4 +114,5 @@ void playRound(int &score)
             cout << "Attempts left: " << MAX_GUESSES - attempts << endl
                  << endl;
     }
+    return attempts;
 }

@@ -7,15 +7,17 @@
 #include <fstream>
 #include "utilities.h"
 #include "Hangman.h"
+#include "Stats.h"
 using namespace std;
 
 const int MAX_LIVES = 6;
 
-void Hangman()
+void Hangman(playerStats &stats)
 {
     srand(time(0));
 
     string word = getRandomWord();
+    int wordDifficulty = CalculateWordDifficulty(word);
 
     // Sets a blanck word equal to the length of the word to be guessed
     string blankWord(word.length(), '_');
@@ -95,9 +97,15 @@ void Hangman()
     // Message for end of the game
     cout << "\n======================================================" << endl;
     if (blankWord == word)
+    {
         cout << "\n  Congratulations! You guessed the word right!: " << GREEN << word << RESET << endl;
+        update_hangman_stats(stats, 1, wordDifficulty, wrongGuessesCount);
+    }
     else
+    {
         cout << "\n  You could not guess right! The word was: " << RED << word << RESET << endl;
+        update_hangman_stats(stats, -1, wordDifficulty / 2, wrongGuessesCount);
+    }
 
     cout << "\n======================================================" << endl;
     pauseScreen();
@@ -201,4 +209,68 @@ bool isCorrectGuess(string word, string &blankWord, char guess)
          << "====================================" << endl;
     pauseScreen();
     return false;
+}
+
+int CalculateWordDifficulty(string word)
+{
+    int score = 0;
+
+    for (char c : word)
+    {
+        // Assign values based on English frequency (Scrabble style)
+        switch (toupper(c))
+        {
+        // Very Common (1 pt)
+        case 'A':
+        case 'E':
+        case 'I':
+        case 'O':
+        case 'U':
+        case 'L':
+        case 'N':
+        case 'S':
+        case 'T':
+        case 'R':
+            score += 1;
+            break;
+
+        // Common (2-3 pts)
+        case 'D':
+        case 'G':
+            score += 2;
+            break;
+        case 'B':
+        case 'C':
+        case 'M':
+        case 'P':
+            score += 3;
+            break;
+
+        // Rare (4-5 pts)
+        case 'F':
+        case 'H':
+        case 'V':
+        case 'W':
+        case 'Y':
+            score += 4;
+            break;
+        case 'K':
+            score += 5;
+            break;
+
+        // Ultra Rare (8-10 pts)
+        case 'J':
+        case 'X':
+            score += 8;
+            break;
+        case 'Q':
+        case 'Z':
+            score += 10;
+            break;
+
+        default:
+            break; // Ignore special chars
+        }
+    }
+    return score;
 }
