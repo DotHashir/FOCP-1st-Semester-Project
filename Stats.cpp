@@ -159,6 +159,83 @@ void print_final_report(playerStats &stats)
 
     cout << "-------------------------------------------------" << endl;
 
+    // FIND STRONGEST & WEAKEST
+    double scores[4] = {stats.total_guess_effeciency, stats.hangman_total_score, stats.total_focus_games_effeciency, stats.strategy_total_score};
+
+    int maxIndex = 0;
+    double maxVal = scores[0];
+    for (int i = 1; i < 4; i++)
+    {
+        if (scores[i] > maxVal)
+        {
+            maxVal = scores[i];
+            maxIndex = i;
+        }
+    }
+
+    int minIndex = 0;
+    double minVal = scores[0];
+    for (int i = 1; i < 4; i++)
+    {
+        if (scores[i] < minVal && scores[i] > 0)
+        {
+            minVal = scores[i];
+            minIndex = i;
+        }
+    }
+
+    string conclusion = "Rookie. Keep practicing to build your profile.";
+    if (maxVal >= 60)
+    {
+        // GENERATE CONCLUSION
+        switch (maxIndex)
+        {
+        case 0: // High Logic
+            conclusion = "Your Algorithmic Efficiency is your strongest asset. You minimize waste.";
+            break;
+        case 1: // High Focus
+            conclusion = "Your Linguistic Aptitude is dominant. You handle complex patterns easily.";
+
+            break;
+        case 2: // High Strategy
+            conclusion = "Your Error Rate is exceptionally low. You maintain high consistency.";
+
+            break;
+        case 3: // High Verbal
+            conclusion = "Your Tactical Foresight is exceptional. You consistently outmaneuver opponents.";
+
+            break;
+        }
+    }
+
+    // GENERATE RECOMMENDATION
+    string recommendation = "None. Good consistency across all games.";
+    if (minVal < 50)
+    {
+        switch (minIndex)
+        {
+        case 0: // Low Logic
+            recommendation = "Adopt a 'Divide and Conquer' search strategy (Binary Search) to improve efficiency.";
+            break;
+        case 1: // Low Focus
+            recommendation = "Vocabulary risk tolerance is low. Attempt higher-difficulty words to maximize score.";
+
+            break;
+        case 2: // Low Strategy
+            recommendation = "High rate of unforced errors detected. Validate opponent threats before moving.";
+            break;
+        case 3: // Low Verbal
+            recommendation = "Defensive consistency is low. Always verify that your target square is safe before moving.";
+            break;
+        }
+    }
+
+    cout << "ANALYSIS SUMMARY" << endl;
+    cout << "Primary Strength:    " << conclusion << endl;
+    cout << "Area for Improvement: " << recommendation << endl;
+
+    cout << "=================================================" << endl;
+
     pauseScreen();
 }
 
@@ -171,7 +248,7 @@ void update_guess_stats(playerStats &stats, int guessesTaken, int currentRange)
     int perfectScore = (int)ceil(log2(currentRange));
     stats.optimal_guesses_sum += perfectScore;
 
-    stats.total_guess_effeciency = static_cast<double>(stats.optimal_guesses_sum / stats.total_guesses) * 100;
+    stats.total_guess_effeciency = (static_cast<double>(stats.optimal_guesses_sum) / stats.total_guesses) * 100;
     if (stats.total_guess_effeciency > 100)
         stats.total_guess_effeciency = 100;
 }
