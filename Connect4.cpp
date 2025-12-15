@@ -28,6 +28,7 @@ void Connect4(playerStats &stats)
     {
         printBoard();
 
+        // Check if the red player (player one) can win on this very move
         if (isRedTurn)
             canWinNow();
         playerInput();

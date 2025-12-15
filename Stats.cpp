@@ -5,13 +5,15 @@
 #include "Utilities.h"
 using namespace std;
 
-void draw_bar(double score, string colorCode = "")
+// Function that draws bars according to the score
+void draw_bar(double score)
 {
     int bars = (int)(score / 5); // 100% = 20 bars
     if (bars > 20)
         bars = 20;
 
     cout << " [";
+    // Darws green, yellow or red bars depending on the score
     if (score >= 75)
         cout << GREEN;
     else if (score >= 40)
@@ -26,6 +28,7 @@ void draw_bar(double score, string colorCode = "")
     cout << "] " << (int)score << "%";
 }
 
+// Gets comment to display depending on score and other data
 string get_comment(string category, double score, double strategyTime = 0.0, int focusMissedWins = 0)
 {
     if (category == "LOGIC")
@@ -71,6 +74,7 @@ string get_comment(string category, double score, double strategyTime = 0.0, int
             return "Outmaneuvered. You are attentive, but your opponent is trapping you.";
         }
     }
+    // Also uses how long it took user to play next move to display a personalized message
     else if (category == "STRATEGY")
     {
         // High Performance
@@ -158,6 +162,7 @@ void print_final_report(playerStats &stats)
     pauseScreen();
 }
 
+// Update the stats data of Guess the Number game
 void update_guess_stats(playerStats &stats, int guessesTaken, int currentRange)
 {
     stats.guess_games_played++;
@@ -171,6 +176,7 @@ void update_guess_stats(playerStats &stats, int guessesTaken, int currentRange)
         stats.total_guess_effeciency = 100;
 }
 
+// Update the stats data of Tic Tac Toe
 void update_ttt_stats(playerStats &stats, int result, int missed_wins)
 {
     stats.ttt_games_played++;
@@ -188,6 +194,7 @@ void update_ttt_stats(playerStats &stats, int result, int missed_wins)
     update_focus_games_stats(stats);
 }
 
+// Update the stats data of Connect 4
 void update_connect4_stats(playerStats &stats, int result, int missed_wins)
 {
     stats.connect4_games_played++;
@@ -205,6 +212,7 @@ void update_connect4_stats(playerStats &stats, int result, int missed_wins)
     update_focus_games_stats(stats);
 }
 
+// Combine the stats of Tic Tac Toe and Connect 4
 void update_focus_games_stats(playerStats &stats)
 {
     stats.total_focus_games_effeciency = ((stats.ttt_total_points + stats.connect4_total_points) / (stats.ttt_games_played + stats.connect4_games_played)) * 100;
@@ -214,6 +222,7 @@ void update_focus_games_stats(playerStats &stats)
     stats.total_focus_games_missed_wins = (static_cast<double>(stats.ttt_missed_wins + stats.connect4_missed_wins)) / (stats.ttt_games_played + stats.connect4_games_played);
 }
 
+// Update the stats data of chess
 void update_chess_stats(playerStats &stats, int result, double think_time, int moves_made, int material_balance)
 {
     stats.chess_games_played++;
@@ -236,6 +245,7 @@ void update_chess_stats(playerStats &stats, int result, double think_time, int m
     update_strategy_stats(stats);
 }
 
+// Update the stats data of checkers
 void update_checkers_stats(playerStats &stats, int result, double think_time, int moves_made, int captures_made, int material_balance)
 {
     stats.checkers_games_played++;
@@ -257,6 +267,7 @@ void update_checkers_stats(playerStats &stats, int result, double think_time, in
     update_strategy_stats(stats);
 }
 
+// Combine the stats of chess and checkers
 void update_strategy_stats(playerStats &stats)
 {
     stats.strategy_total_score = (stats.chess_total_score + stats.checkers_total_score) / (stats.chess_games_played + stats.checkers_games_played);
@@ -266,6 +277,7 @@ void update_strategy_stats(playerStats &stats)
     stats.strategy_think_time = (stats.chess_total_think_time + stats.checkers_total_think_time) / (stats.chess_total_moves_made + stats.checkers_total_moves_made);
 }
 
+// Update the stats of hangman
 void update_hangman_stats(playerStats &stats, int result, int difficulty_attempted, int wrong_guesses)
 {
     stats.hangman_games_played++;

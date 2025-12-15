@@ -146,6 +146,7 @@ string getRandomWord()
     string words[MAX_WORDS];
     int count = 0;
 
+    // Extracts words from an external file
     ifstream file("words.txt");
     if (!file)
     {
@@ -211,13 +212,14 @@ bool isCorrectGuess(string word, string &blankWord, char guess)
     return false;
 }
 
+// Calculates difficulty points by seeing how many obscure letters are in the word
 int CalculateWordDifficulty(string word)
 {
     int score = 0;
 
     for (char c : word)
     {
-        // Assign values based on English frequency (Scrabble style)
+        // Assign values based on English frequency
         switch (toupper(c))
         {
         // Very Common (1 pt)

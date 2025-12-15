@@ -7,10 +7,12 @@
 #include "Stats.h"
 using namespace std;
 
+// Constants
 static const int BOARD_SIZE = 8;
 const char BLACK_PIECE = 'b';
 const char WHITE_PIECE = 'w';
 
+// Global variables
 static char board[BOARD_SIZE][BOARD_SIZE];
 bool isBlackTurn = true;
 static bool gameOver = false;
@@ -47,6 +49,7 @@ void checkers(playerStats &stats)
 
         if (isValidMove(sr, sc, er, ec, false))
         {
+            // Only tracking player one's data
             if (isBlackTurn)
             {
                 movesMade++;
@@ -61,6 +64,7 @@ void checkers(playerStats &stats)
             if (isWin())
             {
                 winScreen();
+                // If game ends on player 1 count it as a win otherwize as a loss
                 if (isBlackTurn)
                     update_checkers_stats(stats, 1, totalThinkTime, movesMade, captures, materialDifference);
                 else
@@ -446,6 +450,7 @@ bool isOpponentPiece(int row, int col)
     return false;
 }
 
+// Calculates material difference by assigning a value to each peace and then summing them up
 static void calculateMaterialDifference(char board[8][8])
 {
     int enemyPoints = 0;
@@ -456,8 +461,10 @@ static void calculateMaterialDifference(char board[8][8])
         for (int j = 0; j < 8; j++)
         {
             int value = 0;
+            // Regular man pieces have a value of one
             if (islower(board[i][j]))
                 value = 1;
+            // King pieces have a value of three
             else if (isupper(board[i][j]))
                 value = 3;
 

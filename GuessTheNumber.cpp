@@ -24,6 +24,7 @@ void GuessTheNumber(playerStats &stats)
     while (!gameOver)
     {
         int attempts = playRound(score);
+        // If attemots = -1, means that the user quit instead of completing the round
         if (attempts != -1)
             update_guess_stats(stats, attempts, MAX_RANGE);
 

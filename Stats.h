@@ -57,7 +57,8 @@ struct playerStats
     double hangman_total_score = 0.0;
 };
 
-void draw_bar(double score, std::string colorCode);
+void draw_bar(double score);
+std::string get_comment(std::string category, double score, double strategyTime, int focusMissedWins);
 void print_final_report(playerStats &stats);
 void update_guess_stats(playerStats &stats, int guessesTaken, int currentRange);
 void update_ttt_stats(playerStats &stats, int result, int missed_wins);

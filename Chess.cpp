@@ -49,6 +49,7 @@ void chess(playerStats &stats)
 
         if (isValidMove(sr, sc, er, ec, board, false))
         {
+            // Only track player one's stats
             if (isWhiteTurn)
             {
                 movesMade++;
@@ -768,6 +769,7 @@ static void stalemateScreen(char board[8][8])
     pauseScreen();
 }
 
+// Calculates the material difference by assigning standard value points to each piece and then summing them up
 static void calculateMaterialDifference(char board[8][8])
 {
     int enemyPoints = 0;
