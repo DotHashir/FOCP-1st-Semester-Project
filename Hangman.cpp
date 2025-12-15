@@ -4,6 +4,7 @@
 #include <ctime>
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 #include "utilities.h"
 #include "Hangman.h"
 using namespace std;
@@ -133,12 +134,27 @@ void displayHangman(int attemptsLeft)
 
 string getRandomWord()
 {
-    // Collection of all the words that have the chance of being asked in th hangman game
-    string words[] = {"apple", "sunflower", "cherry", "orange", "grape", "fountain", "basket", "pineapple", "sticker", "strawberry", "guitar", "violin", "trumpet", "piano", "drum", "tornado", "harmony", "melody", "rhythm", "concert", "robot", "rocket", "galaxy", "comet", "meteor", "planet", "eclipse", "orbit", "asteroid", "cosmos", "shadow", "whisper", "thunder", "lightning", "breeze", "hurricane", "college", "blizzard", "avalanche", "rainbow", "castle", "dragon", "knight", "wizard", "princess", "kingdom", "treasure", "sword", "empire", "fortress", "dolphin", "tiger", "leopard", "parrot", "turtle", "kangaroo", "elephant", "penguin", "octopus", "gorilla", "puzzle", "mirror", "lantern", "thunderstorm", "journey", "mystery", "circus", "canyon", "desert", "jungle", "crystal", "diamond", "emerald", "sapphire", "gemstone", "pearl", "silver", "golden", "bronze", "quartz", "volcano", "island", "shoreline", "valley", "mountain", "waterfall", "forest", "river", "meadow", "compiler", "laptop", "battery", "keyboard", "monitor", "printer", "browser", "network", "server", "coding", "cricket"};
+    const int MAX_WORDS = 1000;
+    string words[MAX_WORDS];
+    int count = 0;
 
-    // Finds the size of the array of collection of words annd then choses a random word from it
-    int size = sizeof(words) / sizeof(words[0]);
-    int index = rand() % size;
+    ifstream file("words.txt");
+    if (!file)
+    {
+        cout << "Cannot open words.txt\n";
+        return "";
+    }
+    while (count < MAX_WORDS && file >> words[count])
+    {
+        count++;
+    }
+    if (count == 0)
+    {
+        cout << "No words in file!\n";
+        return "";
+    }
+
+    int index = rand() % count;
     return words[index];
 }
 
